@@ -4,11 +4,19 @@ public class User {
     private int userId;
     private String name;
     private String password;
+    private String roleLevel;
 
-    public User(int userId, String name, String password) {
-        this.userId = userId;
-        this.name = name;
-        this.password = password;
+    public User(
+    	    int userId,
+    	    String name,
+    	    String password,
+    	    String roleLevel
+    ) {
+
+    	    this.userId = userId;
+    	    this.name = name;
+    	    this.password = password;
+    	    this.roleLevel = roleLevel;
     }
 
     public int getUserId() {
@@ -21,5 +29,9 @@ public class User {
 
     public String getPassword() {
         return password;
+    }
+    
+    public String getRoleLevel() {
+        return roleLevel;
     }
 }
