@@ -4,6 +4,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.time.LocalDateTime;
+import model.BorrowRecord;
+import java.sql.*;
+import java.util.*;
 
 public class BorrowDAO {
 
@@ -299,5 +302,58 @@ public class BorrowDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    
+    //管理者功能
+    // 查詢所有借還紀錄
+    public List<BorrowRecord> getAllRecords() {
+        return queryRecords("SELECT br.record_id, u.student_no, u.name, b.title, " +
+            "br.borrow_date, br.due_date, br.return_date, br.borrow_days " +
+            "FROM borrow_records br " +
+            "JOIN users u ON br.user_id = u.user_id " +
+            "JOIN books b ON br.book_id = b.book_id " +
+            "ORDER BY br.created_at DESC", null);
+    }
+
+    // 依學號查詢借還紀錄
+    public List<BorrowRecord> getRecordsByStudentNo(String studentNo) {
+        return queryRecords("SELECT br.record_id, u.student_no, u.name, b.title, " +
+            "br.borrow_date, br.due_date, br.return_date, br.borrow_days " +
+            "FROM borrow_records br " +
+            "JOIN users u ON br.user_id = u.user_id " +
+            "JOIN books b ON br.book_id = b.book_id " +
+            "WHERE u.student_no = ? " +
+            "ORDER BY br.created_at DESC", studentNo);
+    }
+
+    private List<BorrowRecord> queryRecords(String sql, String studentNo) {
+        List<BorrowRecord> records = new ArrayList<>();
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            if (studentNo != null) {
+                stmt.setString(1, studentNo);
+            }
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                records.add(new BorrowRecord(
+                    rs.getInt("record_id"),
+                    rs.getString("student_no"),
+                    rs.getString("name"),
+                    rs.getString("title"),
+                    rs.getString("borrow_date"),
+                    rs.getString("due_date"),
+                    rs.getString("return_date"),
+                    rs.getInt("borrow_days")
+                ));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return records;
     }
 }

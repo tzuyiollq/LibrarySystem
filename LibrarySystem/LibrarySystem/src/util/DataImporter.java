@@ -184,4 +184,27 @@ public class DataImporter {
 
         return date.format(FORMATTER);
     }
+    public static void importDefaultAdmin() {
+
+        String sql = """
+            INSERT INTO admins (username, password)
+            VALUES (?, ?)
+        """;
+
+        try (
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+
+            stmt.setString(1, "admin");
+            stmt.setString(2, "1234");
+
+            stmt.executeUpdate();
+
+            System.out.println("預設管理者建立完成！");
+
+        } catch (Exception e) {
+            System.out.println("預設管理者可能已存在，略過建立。");
+        }
+    }
 }

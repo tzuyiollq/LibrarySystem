@@ -3,6 +3,9 @@ package dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import model.Book;
+import java.sql.*;
+import java.util.*;
 
 public class BookDAO {
 
@@ -60,4 +63,112 @@ public class BookDAO {
             e.printStackTrace();
         }
     }
+    
+    //管理者介面
+    // 查詢所有書籍
+    public List<Book> getAllBooks() {
+        List<Book> books = new ArrayList<>();
+        String sql = "SELECT * FROM books";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                books.add(new Book(
+                    rs.getInt("book_id"),
+                    rs.getString("title"),
+                    rs.getString("authors"),
+                    rs.getString("subjects"),
+                    rs.getString("publisher"),
+                    rs.getString("publish_year"),
+                    rs.getString("edition"),
+                    rs.getString("format_desc"),
+                    rs.getString("source"),
+                    rs.getString("note"),
+                    rs.getString("status")
+                ));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return books;
+    }
+
+    // 新增書籍
+    public boolean addBook(Book book, List<String> isbns) {
+        String bookSql = """
+            INSERT INTO books
+            (title, authors, subjects, publisher, publish_year, edition, format_desc, source, note, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'AVAILABLE')
+        """;
+
+        String isbnSql = "INSERT INTO book_isbns (book_id, isbn) VALUES (?, ?)";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement bookStmt = conn.prepareStatement(bookSql, Statement.RETURN_GENERATED_KEYS);
+             PreparedStatement isbnStmt = conn.prepareStatement(isbnSql)) {
+
+            bookStmt.setString(1, book.getTitle());
+            bookStmt.setString(2, book.getAuthors());
+            bookStmt.setString(3, book.getSubjects());
+            bookStmt.setString(4, book.getPublisher());
+            bookStmt.setString(5, book.getPublishYear());
+            bookStmt.setString(6, book.getEdition());
+            bookStmt.setString(7, book.getFormatDesc());
+            bookStmt.setString(8, book.getSource());
+            bookStmt.setString(9, book.getNote());
+            bookStmt.executeUpdate();
+
+            ResultSet keys = bookStmt.getGeneratedKeys();
+            if (keys.next()) {
+                int bookId = keys.getInt(1);
+                for (String isbn : isbns) {
+                    isbnStmt.setInt(1, bookId);
+                    isbnStmt.setString(2, isbn);
+                    isbnStmt.executeUpdate();
+                }
+            }
+
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // 下架書籍（直接刪除）
+    public boolean removeBook(int bookId) {
+        String deleteIsbnSql = "DELETE FROM book_isbns WHERE book_id = ?";
+        String deleteRecordSql = "DELETE FROM borrow_records WHERE book_id = ?";
+        String deleteBookSql = "DELETE FROM books WHERE book_id = ?";
+
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement isbnStmt = conn.prepareStatement(deleteIsbnSql);
+             PreparedStatement recordStmt = conn.prepareStatement(deleteRecordSql);
+             PreparedStatement bookStmt = conn.prepareStatement(deleteBookSql)) {
+
+            // 先刪 book_isbns
+            isbnStmt.setInt(1, bookId);
+            isbnStmt.executeUpdate();
+
+            // 再刪 borrow_records
+            recordStmt.setInt(1, bookId);
+            recordStmt.executeUpdate();
+
+            // 最後刪書
+            bookStmt.setInt(1, bookId);
+            bookStmt.executeUpdate();
+
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
 }
