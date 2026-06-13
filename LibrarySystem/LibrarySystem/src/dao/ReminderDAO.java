@@ -4,6 +4,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import model.BorrowRecord;
+
 public class ReminderDAO {
 
     public void showDueSoonReminders(int userId) {
@@ -48,5 +53,55 @@ public class ReminderDAO {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+    public List<BorrowRecord> getDueSoonBooks(int userId) {
+
+        List<BorrowRecord> records = new ArrayList<>();
+
+        String sql = """
+            SELECT br.record_id,
+                   b.title,
+                   br.borrow_date,
+                   br.due_date
+            FROM borrow_records br
+            JOIN books b
+                 ON br.book_id = b.book_id
+            WHERE br.user_id = ?
+              AND br.return_date IS NULL
+              AND DATEDIFF(br.due_date, NOW()) <= 3
+              AND DATEDIFF(br.due_date, NOW()) >= 0
+            ORDER BY br.due_date
+        """;
+
+        try (
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+
+            stmt.setInt(1, userId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+
+                records.add(
+                    new BorrowRecord(
+                        rs.getInt("record_id"),
+                        "",
+                        "",
+                        rs.getString("title"),
+                        rs.getString("borrow_date"),
+                        rs.getString("due_date"),
+                        null,
+                        0
+                    )
+                );
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return records;
     }
 }

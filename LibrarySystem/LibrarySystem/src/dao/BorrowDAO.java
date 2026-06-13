@@ -356,4 +356,53 @@ public class BorrowDAO {
 
         return records;
     }
+    public List<BorrowRecord> getUserBorrowRecords(int userId) {
+
+        List<BorrowRecord> records = new ArrayList<>();
+
+        String sql = """
+            SELECT br.record_id,
+                   b.title,
+                   br.borrow_date,
+                   br.due_date,
+                   br.return_date
+            FROM borrow_records br
+            JOIN books b
+                ON br.book_id = b.book_id
+            WHERE br.user_id = ?
+            ORDER BY br.borrow_date DESC
+        """;
+
+        try (
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+
+            stmt.setInt(1, userId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+
+                BorrowRecord record = new BorrowRecord(
+                        rs.getInt("record_id"),
+                        "",
+                        "",
+                        rs.getString("title"),
+                        rs.getString("borrow_date"),
+                        rs.getString("due_date"),
+                        rs.getString("return_date"),
+                        0
+                );
+
+                records.add(record);
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+
+        return records;
+    }
 }

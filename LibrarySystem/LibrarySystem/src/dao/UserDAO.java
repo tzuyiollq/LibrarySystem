@@ -68,7 +68,32 @@ public class UserDAO {
             e.printStackTrace();
         }
     }
-    
+    public boolean existsStudentNo(String studentNo) {
+
+        String sql =
+                "SELECT COUNT(*) FROM users WHERE student_no = ?";
+
+        try (
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+
+            stmt.setString(1, studentNo);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+
+                return rs.getInt(1) > 0;
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+
+        return false;
+    }
     //管理者功能
     // 查詢所有使用者
     public List<User> getAllUsers() {

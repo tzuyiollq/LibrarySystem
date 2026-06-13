@@ -170,5 +170,67 @@ public class BookDAO {
             return false;
         }
     }
-    
+    public java.util.List<model.Book> searchBookList(String keyword) {
+
+        java.util.List<model.Book> books = new java.util.ArrayList<>();
+
+        String sql = """
+            SELECT b.*,
+                   GROUP_CONCAT(all_i.isbn SEPARATOR ', ') AS isbns
+            FROM books b
+            LEFT JOIN book_isbns all_i ON b.book_id = all_i.book_id
+            WHERE b.title LIKE ?
+               OR b.authors LIKE ?
+               OR b.subjects LIKE ?
+               OR b.publisher LIKE ?
+               OR b.book_id IN (
+                    SELECT book_id
+                    FROM book_isbns
+                    WHERE isbn LIKE ?
+               )
+            GROUP BY b.book_id
+        """;
+
+        try (
+            java.sql.Connection conn = DBConnection.getConnection();
+            java.sql.PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+
+            String search = "%" + keyword + "%";
+
+            stmt.setString(1, search);
+            stmt.setString(2, search);
+            stmt.setString(3, search);
+            stmt.setString(4, search);
+            stmt.setString(5, search);
+
+            java.sql.ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+
+                model.Book book = new model.Book(
+                        rs.getInt("book_id"),
+                        rs.getString("title"),
+                        rs.getString("authors"),
+                        rs.getString("subjects"),
+                        rs.getString("publisher"),
+                        rs.getString("publish_year"),
+                        rs.getString("edition"),
+                        rs.getString("format_desc"),
+                        rs.getString("source"),
+                        rs.getString("note"),
+                        rs.getString("status")
+                );
+
+                book.setIsbns(rs.getString("isbns"));
+
+                books.add(book);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return books;
+    }
 }
