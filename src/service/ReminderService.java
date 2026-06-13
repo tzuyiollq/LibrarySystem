@@ -9,4 +9,5 @@ public class ReminderService {
     public void showDueSoonReminders(int userId) { reminderDAO.showDueSoonReminders(userId); }
     public List<BorrowRecord> getDueSoonBooks(int userId) { return reminderDAO.getDueSoonBooks(userId); }
     public List<BorrowRecord> getOverdueRecords(int userId) { return reminderDAO.getOverdueRecords(userId); }
+    public void suspendLongOverdueUsers() { reminderDAO.suspendLongOverdueUsers(); }
 }

@@ -39,4 +39,25 @@ public class ReminderDAO {
         } catch (Exception e) { e.printStackTrace(); }
         return records;
     }
+    public void suspendLongOverdueUsers() {
+        String sql = """
+            UPDATE users
+            SET status = 'SUSPENDED'
+            WHERE user_id IN (
+                SELECT user_id
+                FROM borrow_records
+                WHERE return_date IS NULL
+                  AND DATEDIFF(NOW(), due_date) >= 7
+            )
+        """;
+        try (
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+            int count = stmt.executeUpdate();
+            System.out.println("逾期停權完成，共停權 " + count + " 位使用者。");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
