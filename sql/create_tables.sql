@@ -57,3 +57,13 @@ CREATE TABLE borrow_records (
     FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (book_id) REFERENCES books(book_id)
 );
+
+CREATE TABLE reservations (
+    reservation_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    book_id INT NOT NULL,
+    reserved_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    status ENUM('WAITING','CANCELLED','COMPLETED') NOT NULL DEFAULT 'WAITING',
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (book_id) REFERENCES books(book_id)
+);
