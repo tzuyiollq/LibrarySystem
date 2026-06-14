@@ -2,6 +2,7 @@ package view;
 
 import javax.swing.*;
 import java.awt.*;
+import view.components.ModernButton;
 
 public class UserMainFrame extends JFrame {
 
@@ -13,6 +14,7 @@ public class UserMainFrame extends JFrame {
     private JButton btnFavoriteBook;
     private JButton btnBookReview;
     private JButton btnProfile;
+    
 
     private JPanel contentPanel;
 
@@ -22,6 +24,9 @@ public class UserMainFrame extends JFrame {
         setSize(1100, 700);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        getContentPane().setBackground(
+                new Color(244,246,248)
+        );
 
         JPanel mainPanel =
                 new JPanel(new BorderLayout());
@@ -33,13 +38,13 @@ public class UserMainFrame extends JFrame {
                 new Dimension(220, 700)
         );
 
-        btnBorrowBook = new JButton("借書");
-        btnReturnBook = new JButton("還書");
-        btnSearchBook = new JButton("書籍查詢");
-        btnHotBooks = new JButton("熱門書籍");
-        btnReserveBook = new JButton("預約書籍");
-        btnFavoriteBook = new JButton("收藏書籍");
-        btnBookReview = new JButton("書評系統");
+        btnBorrowBook = new ModernButton("借書");
+        btnReturnBook = new ModernButton("還書");
+        btnSearchBook = new ModernButton("書籍查詢");
+        btnHotBooks = new ModernButton("熱門書籍");
+        btnReserveBook = new ModernButton("預約書籍");
+        btnFavoriteBook = new ModernButton("收藏書籍");
+        btnBookReview = new ModernButton("書評系統");
         btnProfile = new JButton("個人資料");
 
         menuPanel.add(btnBorrowBook);

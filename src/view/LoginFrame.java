@@ -3,6 +3,7 @@ package view;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import view.components.ModernButton;
 
 public class LoginFrame extends JFrame {
 
@@ -54,16 +55,16 @@ public class LoginFrame extends JFrame {
         txtPassword.setBorder(BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(150, 80, 20)));
         txtPassword.setBounds(390, 270, 260, 40);
 
-        btnLogin = new JButton("登入");
+        btnLogin = new ModernButton("登入");
         btnLogin.setFont(new Font("Microsoft JhengHei", Font.BOLD, 26));
         btnLogin.setBounds(390, 360, 160, 60);
         btnLogin.setFocusPainted(false);
 
-        JLabel lblNoAccount = new JLabel("還沒有？");
-        lblNoAccount.setFont(new Font("Microsoft JhengHei", Font.PLAIN, 20));
-        lblNoAccount.setBounds(330, 470, 100, 35);
+        JLabel lblNoAccount = new JLabel("還沒有帳號？");
+        lblNoAccount.setFont(new Font("Microsoft JhengHei", Font.PLAIN, 16));
+        lblNoAccount.setBounds(330, 470, 200, 35);
 
-        btnRegister = new JButton("註冊");
+        btnRegister = new ModernButton("註冊");
         btnRegister.setFont(new Font("Microsoft JhengHei", Font.PLAIN, 20));
         btnRegister.setBounds(430, 470, 100, 35);
         btnRegister.setFocusPainted(false);
