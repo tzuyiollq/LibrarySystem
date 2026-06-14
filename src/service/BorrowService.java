@@ -1,36 +1,88 @@
 package service;
 
 import dao.BorrowDAO;
-import model.BorrowRecord;
 import model.User;
 import java.util.List;
+import model.BorrowRecord;
 
 public class BorrowService {
+
     private BorrowDAO borrowDAO = new BorrowDAO();
 
-    public void borrowBook(User user, int bookId, int days) {
-        if (user == null) return;
-        if ("NORMAL".equals(user.getRoleLevel()) && days > 7) return;
-        if ("VIP".equals(user.getRoleLevel()) && days > 14) return;
+    public boolean borrowBook(User user, int bookId, int days) {
 
-        int current = borrowDAO.countCurrentBorrowedBooks(user.getUserId());
-        int max = "VIP".equals(user.getRoleLevel()) ? 6 : 3;
-        if (current >= max) return;
+        if (user == null) {
+            System.out.println("請先登入！");
+            return false;
+        }
 
-        borrowDAO.borrowBook(user.getUserId(), bookId, days);
+        if ("SUSPENDED".equals(user.getStatus())) {
+            System.out.println("停權使用者不能借書！");
+            return false;
+        }
+
+        if (user.getRoleLevel().equals("NORMAL") && days > 7) {
+            System.out.println("NORMAL 使用者最多只能借 7 天！");
+            return false;
+        }
+
+        if (user.getRoleLevel().equals("VIP") && days > 14) {
+            System.out.println("VIP 使用者最多只能借 14 天！");
+            return false;
+        }
+
+        int currentBorrowed =
+                borrowDAO.countCurrentBorrowedBooks(user.getUserId());
+
+        int maxBooks =
+                user.getRoleLevel().equals("VIP") ? 10 : 5;
+
+        if (currentBorrowed >= maxBooks) {
+            System.out.println("已達借閱上限！");
+            return false;
+        }
+
+        return borrowDAO.borrowBook(
+                user.getUserId(),
+                bookId,
+                days
+        );
+    }
+
+    public boolean returnBook(int recordId) {
+        return borrowDAO.returnBook(recordId);
     }
 
     public boolean returnBook(User user, int bookId) {
 
         if (user == null) {
+            System.out.println("請先登入！");
             return false;
         }
 
-        return borrowDAO.returnBook(user.getUserId(), bookId);
+        return borrowDAO.returnBookByUserAndBook(
+                user.getUserId(),
+                bookId
+        );
     }
-    public void showUserBorrowRecords(int userId) { borrowDAO.showUserBorrowRecords(userId); }
-    public void showBookBorrowRecords(int bookId) { borrowDAO.showBookBorrowRecords(bookId); }
-    public void showOverdueBooks() { borrowDAO.showOverdueBooks(); }
-    public List<BorrowRecord> getUserBorrowRecords(int userId) { return borrowDAO.getUserBorrowRecords(userId); }
-    public int countCurrentBorrowedBooks(int userId) { return borrowDAO.countCurrentBorrowedBooks(userId);}
+
+    public int countCurrentBorrowedBooks(int userId) {
+        return borrowDAO.countCurrentBorrowedBooks(userId);
+    }
+
+    public void showUserBorrowRecords(int userId) {
+        borrowDAO.showUserBorrowRecords(userId);
+    }
+
+    public void showBookBorrowRecords(int bookId) {
+        borrowDAO.showBookBorrowRecords(bookId);
+    }
+
+    public void showOverdueBooks() {
+        borrowDAO.showOverdueBooks();
+    }
+
+    public List<BorrowRecord> getUserBorrowRecords(int userId) {
+        return borrowDAO.getUserBorrowRecords(userId);
+    }
 }

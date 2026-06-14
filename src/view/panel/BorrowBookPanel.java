@@ -151,29 +151,28 @@ public class BorrowBookPanel extends JPanel {
         btnBorrow.addActionListener(e -> {
 
             try {
-
                 int bookId =
                         Integer.parseInt(
-                                txtBookId.getText()
+                                txtBookId.getText().trim()
                         );
 
                 int days =
-                        (Integer)
-                                cmbDays.getSelectedItem();
+                        (Integer) cmbDays.getSelectedItem();
 
                 BorrowService service =
                         new BorrowService();
 
-                service.borrowBook(user, bookId, days);
+                boolean success =
+                        service.borrowBook(user, bookId, days);
 
                 JOptionPane.showMessageDialog(
                         this,
-                        "借書完成"
+                        success ? "借書成功！" : "借書失敗，請確認書籍狀態、天數或借閱上限"
                 );
 
                 lblRemain.setText(getRemainText());
 
-            } catch (Exception ex){
+            } catch (Exception ex) {
 
                 JOptionPane.showMessageDialog(
                         this,

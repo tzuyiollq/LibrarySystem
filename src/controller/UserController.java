@@ -68,14 +68,7 @@ public class UserController {
     	});
 
     	frame.getBtnSearchBook().addActionListener(e -> {
-
-    	    BookSearchPanel panel = new BookSearchPanel();
-
-    	    panel.getBtnHome().addActionListener(x -> {
-    	        frame.setContent(createHomePanel());
-    	    });
-
-    	    frame.setContent(panel);
+    	    frame.setContent(new BookSearchPanel(user));
     	});
 
         frame.getBtnHotBooks().addActionListener(e ->

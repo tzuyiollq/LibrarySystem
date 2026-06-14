@@ -8,7 +8,7 @@ import java.util.*;
 
 public class BorrowDAO {
 
-    public void borrowBook(int userId, int bookId, int days) {
+    public boolean borrowBook(int userId, int bookId, int days) {
 
         String checkSql =
                 "SELECT status FROM books WHERE book_id = ?";
@@ -33,20 +33,17 @@ public class BorrowDAO {
 
                 if (!rs.next()) {
                     System.out.println("找不到此書！");
-                    return;
+                    return false;
                 }
 
                 if (!"AVAILABLE".equals(rs.getString("status"))) {
                     System.out.println("此書目前無法借閱！");
-                    return;
+                    return false;
                 }
             }
 
-            LocalDateTime borrowDate =
-                    LocalDateTime.now();
-
-            LocalDateTime dueDate =
-                    borrowDate.plusDays(days);
+            LocalDateTime borrowDate = LocalDateTime.now();
+            LocalDateTime dueDate = borrowDate.plusDays(days);
 
             try (PreparedStatement stmt =
                          conn.prepareStatement(insertSql)) {
@@ -68,63 +65,68 @@ public class BorrowDAO {
             }
 
             System.out.println("借書成功！");
+            return true;
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return false;
     }
 
-    public boolean returnBook(int userId, int bookId) {
+    public boolean returnBook(int recordId) {
 
-        String findSql = """
-            SELECT record_id
+        String getSql = """
+            SELECT book_id
             FROM borrow_records
-            WHERE user_id = ?
-              AND book_id = ?
-              AND return_date IS NULL
-            ORDER BY borrow_date DESC
-            LIMIT 1
-        """;
-
-        String returnSql = """
-            UPDATE borrow_records
-            SET return_date = NOW()
             WHERE record_id = ?
+              AND return_date IS NULL
         """;
 
-        String updateBookSql = """
-            UPDATE books
-            SET status = 'AVAILABLE'
-            WHERE book_id = ?
-        """;
+        String returnSql =
+                "UPDATE borrow_records SET return_date = ? WHERE record_id = ?";
+
+        String updateSql =
+                "UPDATE books SET status = 'AVAILABLE' WHERE book_id = ?";
 
         try (Connection conn = DBConnection.getConnection()) {
 
-            int recordId = -1;
+            int bookId;
 
-            try (PreparedStatement stmt = conn.prepareStatement(findSql)) {
-                stmt.setInt(1, userId);
-                stmt.setInt(2, bookId);
+            try (PreparedStatement stmt =
+                         conn.prepareStatement(getSql)) {
+
+                stmt.setInt(1, recordId);
 
                 ResultSet rs = stmt.executeQuery();
 
-                if (rs.next()) {
-                    recordId = rs.getInt("record_id");
-                } else {
+                if (!rs.next()) {
+                    System.out.println("找不到借閱紀錄或已歸還！");
                     return false;
                 }
+
+                bookId = rs.getInt("book_id");
             }
 
-            try (PreparedStatement stmt = conn.prepareStatement(returnSql)) {
-                stmt.setInt(1, recordId);
+            try (PreparedStatement stmt =
+                         conn.prepareStatement(returnSql)) {
+
+                stmt.setTimestamp(
+                        1,
+                        Timestamp.valueOf(LocalDateTime.now())
+                );
+                stmt.setInt(2, recordId);
                 stmt.executeUpdate();
             }
 
-            try (PreparedStatement stmt = conn.prepareStatement(updateBookSql)) {
+            try (PreparedStatement stmt =
+                         conn.prepareStatement(updateSql)) {
+
                 stmt.setInt(1, bookId);
                 stmt.executeUpdate();
             }
 
+            System.out.println("還書成功！");
             return true;
 
         } catch (Exception e) {
@@ -144,17 +146,12 @@ public class BorrowDAO {
         """;
 
         try (
-            Connection conn =
-                    DBConnection.getConnection();
-
-            PreparedStatement stmt =
-                    conn.prepareStatement(sql)
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)
         ) {
-
             stmt.setInt(1, userId);
 
-            ResultSet rs =
-                    stmt.executeQuery();
+            ResultSet rs = stmt.executeQuery();
 
             if (rs.next()) {
                 return rs.getInt(1);
@@ -169,8 +166,7 @@ public class BorrowDAO {
 
     public List<BorrowRecord> getUserBorrowRecords(int userId) {
 
-        List<BorrowRecord> records =
-                new ArrayList<>();
+        List<BorrowRecord> records = new ArrayList<>();
 
         String sql = """
             SELECT br.record_id,
@@ -186,20 +182,14 @@ public class BorrowDAO {
         """;
 
         try (
-            Connection conn =
-                    DBConnection.getConnection();
-
-            PreparedStatement stmt =
-                    conn.prepareStatement(sql)
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)
         ) {
-
             stmt.setInt(1, userId);
 
-            ResultSet rs =
-                    stmt.executeQuery();
+            ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-
                 records.add(new BorrowRecord(
                         rs.getInt("record_id"),
                         "",
@@ -220,14 +210,12 @@ public class BorrowDAO {
     }
 
     public void showUserBorrowRecords(int userId) {
-
         for (BorrowRecord r : getUserBorrowRecords(userId)) {
             System.out.println(r.getBookTitle());
         }
     }
 
     public void showBookBorrowRecords(int bookId) {
-
         String sql = """
             SELECT br.record_id,
                    u.student_no,
@@ -245,23 +233,16 @@ public class BorrowDAO {
         """;
 
         try (
-            Connection conn =
-                    DBConnection.getConnection();
-
-            PreparedStatement stmt =
-                    conn.prepareStatement(sql)
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)
         ) {
-
             stmt.setInt(1, bookId);
 
-            ResultSet rs =
-                    stmt.executeQuery();
+            ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 System.out.println(
-                        rs.getString("name")
-                                + " - "
-                                + rs.getString("title")
+                        rs.getString("name") + " - " + rs.getString("title")
                 );
             }
 
@@ -271,7 +252,6 @@ public class BorrowDAO {
     }
 
     public void showOverdueBooks() {
-
         for (BorrowRecord r : getAllRecords()) {
             if (r.getReturnDate() == null) {
                 System.out.println(r.getBookTitle());
@@ -280,7 +260,6 @@ public class BorrowDAO {
     }
 
     public List<BorrowRecord> getAllRecords() {
-
         return queryRecords("""
             SELECT br.record_id,
                    u.student_no,
@@ -297,10 +276,7 @@ public class BorrowDAO {
         """, null);
     }
 
-    public List<BorrowRecord> getRecordsByStudentNo(
-            String studentNo
-    ) {
-
+    public List<BorrowRecord> getRecordsByStudentNo(String studentNo) {
         return queryRecords("""
             SELECT br.record_id,
                    u.student_no,
@@ -318,31 +294,21 @@ public class BorrowDAO {
         """, studentNo);
     }
 
-    private List<BorrowRecord> queryRecords(
-            String sql,
-            String studentNo
-    ) {
+    private List<BorrowRecord> queryRecords(String sql, String studentNo) {
 
-        List<BorrowRecord> records =
-                new ArrayList<>();
+        List<BorrowRecord> records = new ArrayList<>();
 
         try (
-            Connection conn =
-                    DBConnection.getConnection();
-
-            PreparedStatement stmt =
-                    conn.prepareStatement(sql)
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)
         ) {
-
             if (studentNo != null) {
                 stmt.setString(1, studentNo);
             }
 
-            ResultSet rs =
-                    stmt.executeQuery();
+            ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
-
                 records.add(new BorrowRecord(
                         rs.getInt("record_id"),
                         rs.getString("student_no"),
@@ -360,5 +326,36 @@ public class BorrowDAO {
         }
 
         return records;
+    }
+    public boolean returnBookByUserAndBook(int userId, int bookId) {
+
+        String sql = """
+            SELECT record_id
+            FROM borrow_records
+            WHERE user_id = ?
+              AND book_id = ?
+              AND return_date IS NULL
+            LIMIT 1
+        """;
+
+        try (
+            Connection conn = DBConnection.getConnection();
+            PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, bookId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int recordId = rs.getInt("record_id");
+                return returnBook(recordId);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 }
