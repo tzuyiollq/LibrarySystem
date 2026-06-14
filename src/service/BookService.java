@@ -12,4 +12,5 @@ public class BookService {
     public List<Book> getAllBooks() { return bookDAO.getAllBooks(); }
     public boolean addBook(Book book, List<String> isbns) { return bookDAO.addBook(book, isbns); }
     public boolean removeBook(int bookId) { return bookDAO.removeBook(bookId); }
+    public java.util.List<model.HotBook> getHotBooks() { return bookDAO.getHotBooks(); }
 }

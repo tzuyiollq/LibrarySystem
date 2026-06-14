@@ -2,7 +2,18 @@ package controller;
 
 import model.User;
 import view.UserMainFrame;
-import view.panel.*;
+import view.panel.BorrowBookPanel;
+import view.panel.ReturnBookPanel;
+import view.panel.BookSearchPanel;
+import view.panel.HotBookPanel;
+import view.panel.ReserveBookPanel;
+import view.panel.FavoritePanel;
+import view.panel.BookReviewPanel;
+import view.panel.ProfilePanel;
+
+
+import javax.swing.*;
+import java.awt.*;
 
 public class UserController {
 
@@ -12,33 +23,104 @@ public class UserController {
     public UserController(UserMainFrame frame, User user) {
         this.frame = frame;
         this.user = user;
+
         initEvents();
     }
 
     private void initEvents() {
 
-        frame.getBtnBorrowBook().addActionListener(e ->
-                frame.setContent(new BorrowBookPanel(user))
-        );
+    	frame.getBtnBorrowBook().addActionListener(e -> {
 
-        frame.getBtnReturnBook().addActionListener(e ->
-                frame.setContent(new ReturnBookPanel())
-        );
+    	    BorrowBookPanel panel =
+    	            new BorrowBookPanel(user);
 
-        frame.getBtnSearchBook().addActionListener(e ->
-                frame.setContent(new BookSearchPanel())
-        );
+    	    panel.getBtnHome().addActionListener(x -> {
+
+    	        JPanel home = new JPanel(
+    	                new BorderLayout()
+    	        );
+
+    	        home.add(
+    	                new JLabel(
+    	                        "歡迎使用，" +
+    	                        user.getName(),
+    	                        SwingConstants.CENTER
+    	                ),
+    	                BorderLayout.CENTER
+    	        );
+
+    	        frame.setContent(home);
+
+    	    });
+
+    	    frame.setContent(panel);
+    	});
+
+    	frame.getBtnReturnBook().addActionListener(e -> {
+
+    	    ReturnBookPanel panel = new ReturnBookPanel(user);
+
+    	    panel.getBtnHome().addActionListener(x -> {
+    	        frame.setContent(createHomePanel());
+    	    });
+
+    	    frame.setContent(panel);
+    	});
+
+    	frame.getBtnSearchBook().addActionListener(e -> {
+
+    	    BookSearchPanel panel = new BookSearchPanel();
+
+    	    panel.getBtnHome().addActionListener(x -> {
+    	        frame.setContent(createHomePanel());
+    	    });
+
+    	    frame.setContent(panel);
+    	});
 
         frame.getBtnHotBooks().addActionListener(e ->
-                frame.setContent(new HotBookPanel())
+                frame.setContent(
+                        new HotBookPanel()
+                )
         );
 
         frame.getBtnReserveBook().addActionListener(e ->
-                frame.setContent(new ReserveBookPanel(user))
+                frame.setContent(
+                        new ReserveBookPanel(user)
+                )
+        );
+
+        frame.getBtnFavoriteBook().addActionListener(e ->
+                frame.setContent(
+                        new FavoritePanel(user)
+                )
+        );
+
+        frame.getBtnBookReview().addActionListener(e ->
+                frame.setContent(
+                        new BookReviewPanel(user)
+                )
         );
 
         frame.getBtnProfile().addActionListener(e ->
-                frame.setContent(new ProfilePanel(user))
+                frame.setContent(
+                        new ProfilePanel(user)
+                )
         );
+        
+    }
+    private JPanel createHomePanel() {
+
+        JPanel home = new JPanel(new BorderLayout());
+
+        home.add(
+                new JLabel(
+                        "歡迎使用，" + user.getName(),
+                        SwingConstants.CENTER
+                ),
+                BorderLayout.CENTER
+        );
+
+        return home;
     }
 }

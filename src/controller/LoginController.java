@@ -8,6 +8,7 @@ import view.AdminLoginFrame;
 import view.LoginFrame;
 import view.RegisterFrame;
 import view.UserMainFrame;
+import service.ReminderService;
 
 public class LoginController {
 
@@ -31,10 +32,35 @@ public class LoginController {
             User user = authService.loginUser(username, password);
 
             if (user != null) {
+            	ReminderService reminderService = new ReminderService();
+                reminderService.suspendLongOverdueUsers();
+
+                if (user.getStatus().equals("SUSPENDED")) {
+
+                    JOptionPane.showMessageDialog(
+                            loginFrame,
+                            "此帳號已停權，請洽管理員！"
+                    );
+
+                    return;
+                }
+
+                int overdueCount =
+                        reminderService.countOverdueBooks(user.getUserId());
+
+                if (overdueCount > 0) {
+                    JOptionPane.showMessageDialog(
+                            loginFrame,
+                            "您有 " + overdueCount + " 本逾期書籍尚未歸還！"
+                    );
+                }
+
                 JOptionPane.showMessageDialog(loginFrame, "使用者登入成功！");
                 loginFrame.dispose();
 
-                UserMainFrame userMainFrame = new UserMainFrame(user.getName());
+                UserMainFrame userMainFrame =
+                        new UserMainFrame(user.getName());
+
                 new UserController(userMainFrame, user);
 
             } else {

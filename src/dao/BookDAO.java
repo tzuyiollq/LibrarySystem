@@ -87,4 +87,41 @@ public class BookDAO {
         } catch (Exception e) { e.printStackTrace(); }
         return false;
     }
+    
+    public java.util.List<model.HotBook> getHotBooks() {
+
+        java.util.List<model.HotBook> books = new java.util.ArrayList<>();
+
+        String sql = """
+            SELECT b.book_id,
+                   b.title,
+                   b.authors,
+                   COUNT(br.record_id) AS borrow_count
+            FROM books b
+            JOIN borrow_records br ON b.book_id = br.book_id
+            GROUP BY b.book_id, b.title, b.authors
+            ORDER BY borrow_count DESC
+            LIMIT 10
+        """;
+
+        try (
+            java.sql.Connection conn = DBConnection.getConnection();
+            java.sql.PreparedStatement stmt = conn.prepareStatement(sql);
+            java.sql.ResultSet rs = stmt.executeQuery()
+        ) {
+            while (rs.next()) {
+                books.add(new model.HotBook(
+                        rs.getInt("book_id"),
+                        rs.getString("title"),
+                        rs.getString("authors"),
+                        rs.getInt("borrow_count")
+                ));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return books;
+    }
 }

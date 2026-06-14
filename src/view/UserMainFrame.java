@@ -10,6 +10,8 @@ public class UserMainFrame extends JFrame {
     private JButton btnSearchBook;
     private JButton btnHotBooks;
     private JButton btnReserveBook;
+    private JButton btnFavoriteBook;
+    private JButton btnBookReview;
     private JButton btnProfile;
 
     private JPanel contentPanel;
@@ -17,20 +19,27 @@ public class UserMainFrame extends JFrame {
     public UserMainFrame(String username) {
 
         setTitle("圖書館借還書系統 - " + username);
-        setSize(1000, 650);
+        setSize(1100, 700);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JPanel mainPanel = new JPanel(new BorderLayout());
+        JPanel mainPanel =
+                new JPanel(new BorderLayout());
 
-        JPanel menuPanel = new JPanel(new GridLayout(6, 1, 10, 10));
-        menuPanel.setPreferredSize(new Dimension(220, 650));
+        JPanel menuPanel =
+                new JPanel(new GridLayout(8, 1, 10, 10));
+
+        menuPanel.setPreferredSize(
+                new Dimension(220, 700)
+        );
 
         btnBorrowBook = new JButton("借書");
         btnReturnBook = new JButton("還書");
         btnSearchBook = new JButton("書籍查詢");
         btnHotBooks = new JButton("熱門書籍");
         btnReserveBook = new JButton("預約書籍");
+        btnFavoriteBook = new JButton("收藏書籍");
+        btnBookReview = new JButton("書評系統");
         btnProfile = new JButton("個人資料");
 
         menuPanel.add(btnBorrowBook);
@@ -38,10 +47,20 @@ public class UserMainFrame extends JFrame {
         menuPanel.add(btnSearchBook);
         menuPanel.add(btnHotBooks);
         menuPanel.add(btnReserveBook);
+        menuPanel.add(btnFavoriteBook);
+        menuPanel.add(btnBookReview);
         menuPanel.add(btnProfile);
 
-        contentPanel = new JPanel(new BorderLayout());
-        contentPanel.add(new JLabel("歡迎使用，" + username, SwingConstants.CENTER), BorderLayout.CENTER);
+        contentPanel =
+                new JPanel(new BorderLayout());
+
+        contentPanel.add(
+                new JLabel(
+                        "歡迎使用，" + username,
+                        SwingConstants.CENTER
+                ),
+                BorderLayout.CENTER
+        );
 
         mainPanel.add(menuPanel, BorderLayout.WEST);
         mainPanel.add(contentPanel, BorderLayout.CENTER);
@@ -62,5 +81,7 @@ public class UserMainFrame extends JFrame {
     public JButton getBtnSearchBook() { return btnSearchBook; }
     public JButton getBtnHotBooks() { return btnHotBooks; }
     public JButton getBtnReserveBook() { return btnReserveBook; }
+    public JButton getBtnFavoriteBook() { return btnFavoriteBook; }
+    public JButton getBtnBookReview() { return btnBookReview; }
     public JButton getBtnProfile() { return btnProfile; }
 }

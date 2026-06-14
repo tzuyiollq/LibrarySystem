@@ -139,4 +139,31 @@ public class ReservationDAO {
 
         return false;
     }
+    public int countWaitingReservations(int userId) {
+
+        String sql = """
+            SELECT COUNT(*)
+            FROM reservations
+            WHERE user_id = ?
+              AND status = 'WAITING'
+        """;
+
+        try (
+            java.sql.Connection conn = DBConnection.getConnection();
+            java.sql.PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+            stmt.setInt(1, userId);
+
+            java.sql.ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
 }

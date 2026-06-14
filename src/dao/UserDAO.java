@@ -61,4 +61,28 @@ public class UserDAO {
         } catch (Exception e) { e.printStackTrace(); }
         return false;
     }
+    
+    public boolean updateUserRole(String studentNo, String roleLevel) {
+
+        String sql = """
+            UPDATE users
+            SET role_level = ?
+            WHERE student_no = ?
+        """;
+
+        try (
+            java.sql.Connection conn = DBConnection.getConnection();
+            java.sql.PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+            stmt.setString(1, roleLevel);
+            stmt.setString(2, studentNo);
+
+            return stmt.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }

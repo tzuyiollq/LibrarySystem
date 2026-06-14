@@ -20,9 +20,17 @@ public class BorrowService {
         borrowDAO.borrowBook(user.getUserId(), bookId, days);
     }
 
-    public void returnBook(int recordId) { borrowDAO.returnBook(recordId); }
+    public boolean returnBook(User user, int bookId) {
+
+        if (user == null) {
+            return false;
+        }
+
+        return borrowDAO.returnBook(user.getUserId(), bookId);
+    }
     public void showUserBorrowRecords(int userId) { borrowDAO.showUserBorrowRecords(userId); }
     public void showBookBorrowRecords(int bookId) { borrowDAO.showBookBorrowRecords(bookId); }
     public void showOverdueBooks() { borrowDAO.showOverdueBooks(); }
     public List<BorrowRecord> getUserBorrowRecords(int userId) { return borrowDAO.getUserBorrowRecords(userId); }
+    public int countCurrentBorrowedBooks(int userId) { return borrowDAO.countCurrentBorrowedBooks(userId);}
 }

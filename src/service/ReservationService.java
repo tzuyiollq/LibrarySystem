@@ -31,4 +31,7 @@ public class ReservationService {
     public boolean cancelReservation(int reservationId, int userId) {
         return reservationDAO.cancelReservation(reservationId, userId);
     }
+    public int countWaitingReservations(int userId) {
+        return reservationDAO.countWaitingReservations(userId);
+    }
 }

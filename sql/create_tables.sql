@@ -67,3 +67,24 @@ CREATE TABLE reservations (
     FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (book_id) REFERENCES books(book_id)
 );
+
+CREATE TABLE IF NOT EXISTS favorite_books (
+    favorite_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    book_id INT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (book_id) REFERENCES books(book_id),
+    UNIQUE (user_id, book_id)
+);
+
+CREATE TABLE IF NOT EXISTS book_reviews (
+    review_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    book_id INT NOT NULL,
+    rating INT NOT NULL,
+    comment TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (book_id) REFERENCES books(book_id)
+);

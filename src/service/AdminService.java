@@ -21,4 +21,12 @@ public class AdminService {
     public List<Book> getAllBooks() { return bookDAO.getAllBooks(); }
     public boolean addBook(Book book, List<String> isbns) { return bookDAO.addBook(book, isbns); }
     public boolean removeBook(int bookId) { return bookDAO.removeBook(bookId); }
+    public boolean updateUserRole(String studentNo, String roleLevel) {
+
+        if (!roleLevel.equals("NORMAL") && !roleLevel.equals("VIP")) {
+            return false;
+        }
+
+        return userDAO.updateUserRole(studentNo, roleLevel);
+    }
 }
