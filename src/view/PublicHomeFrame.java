@@ -1,6 +1,5 @@
 package view;
 
-import controller.LoginController;
 import model.Book;
 import model.HotBook;
 import service.BookService;
@@ -19,7 +18,8 @@ public class PublicHomeFrame extends JFrame {
     private BookService bookService = new BookService();
 
     public PublicHomeFrame() {
-        setTitle("圖書館借還書系統");
+
+        setTitle("No.67 Library");
         setSize(1100, 700);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -28,10 +28,12 @@ public class PublicHomeFrame extends JFrame {
         add(contentPanel);
 
         showMainPage();
+
         setVisible(true);
     }
 
     private void setContent(JPanel panel) {
+
         contentPanel.removeAll();
         contentPanel.add(panel, BorderLayout.CENTER);
         contentPanel.revalidate();
@@ -45,27 +47,105 @@ public class PublicHomeFrame extends JFrame {
 
         main.setLayout(null);
 
-        JLabel title = UIStyle.title("圖書館借還書系統");
-        title.setBounds(390, 120, 400, 50);
+        // ===== 標題 =====
+        JLabel title = new JLabel("No.67 Library");
+        title.setFont(new Font("Microsoft JhengHei", Font.BOLD, 48));
+        title.setForeground(new Color(34, 58, 94));
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        title.setBounds(0, 120, getWidth(), 70);
         main.add(title);
 
+        // ===== 功能介紹 =====
+        ModernButton btnIntro = new ModernButton("功能介紹");
+        btnIntro.setBounds(430, 250, 220, 55);
+        main.add(btnIntro);
+
+        // ===== 書籍查詢 =====
         ModernButton btnSearch = new ModernButton("書籍查詢");
-        btnSearch.setBounds(430, 230, 220, 55);
+        btnSearch.setBounds(430, 330, 220, 55);
         main.add(btnSearch);
 
+        // ===== 熱門排行 =====
         ModernButton btnHot = new ModernButton("熱門書籍排行");
-        btnHot.setBounds(430, 310, 220, 55);
+        btnHot.setBounds(430, 410, 220, 55);
         main.add(btnHot);
 
+        // ===== 登入 =====
         ModernButton btnLogin = new ModernButton("登入");
-        btnLogin.setBounds(430, 390, 220, 55);
+        btnLogin.setBounds(430, 490, 220, 55);
         main.add(btnLogin);
 
+        btnIntro.addActionListener(e -> showIntroPage());
         btnSearch.addActionListener(e -> showSearchPage());
         btnHot.addActionListener(e -> showHotBookPage());
         btnLogin.addActionListener(e -> showLoginPage());
 
         setContent(main);
+    }
+
+    private void showIntroPage() {
+
+        JPanel main = new JPanel(new BorderLayout(20, 20));
+        main.setBackground(UIStyle.BG);
+        main.setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
+
+        ModernButton btnHome = new ModernButton("← 回首頁");
+        btnHome.setPreferredSize(new Dimension(130, 42));
+
+        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        top.setBackground(UIStyle.BG);
+        top.add(btnHome);
+
+        JPanel wrapper = new JPanel(new GridBagLayout());
+        wrapper.setBackground(UIStyle.BG);
+
+        JPanel card = UIStyle.card();
+        card.setLayout(new BorderLayout(20, 20));
+        card.setPreferredSize(new Dimension(720, 500));
+
+        JLabel title = UIStyle.title("No.67 Library 功能介紹");
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        card.add(title, BorderLayout.NORTH);
+
+        JPanel listPanel = new JPanel(new GridLayout(7, 1, 0, 12));
+        listPanel.setBackground(Color.WHITE);
+        listPanel.setBorder(BorderFactory.createEmptyBorder(10, 25, 10, 25));
+
+        listPanel.add(featureLabel("書籍查詢：可依關鍵字查找館藏書籍，未登入也能使用。"));
+        listPanel.add(featureLabel("熱門書籍排行：查看目前最受歡迎的 TOP 10 書籍。"));
+        listPanel.add(featureLabel("會員借書：登入後可借閱書籍，依會員等級限制借閱天數與本數。"));
+        listPanel.add(featureLabel("預約與收藏：可預約熱門書籍，也能把喜歡的書加入收藏。"));
+        listPanel.add(featureLabel("書評系統：會員可新增、查看與刪除自己的書評。"));
+        listPanel.add(featureLabel("到期提醒：首頁會提醒 3 天內到期與已逾期的書籍。"));
+        listPanel.add(featureLabel("信用分數：準時還書加分，逾期會扣分，扣完會停權。"));
+
+        card.add(listPanel, BorderLayout.CENTER);
+
+        JLabel footer = UIStyle.label("溫馨、簡約、好使用的圖書館借還書系統。");
+        footer.setHorizontalAlignment(SwingConstants.CENTER);
+        card.add(footer, BorderLayout.SOUTH);
+
+        wrapper.add(card);
+
+        main.add(top, BorderLayout.NORTH);
+        main.add(wrapper, BorderLayout.CENTER);
+
+        btnHome.addActionListener(e -> showMainPage());
+
+        setContent(main);
+    }
+
+    private JLabel featureLabel(String text) {
+
+        JLabel label = UIStyle.label("• " + text);
+        label.setOpaque(true);
+        label.setBackground(new Color(248, 252, 255));
+        label.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UIStyle.BORDER),
+                BorderFactory.createEmptyBorder(10, 16, 10, 16)
+        ));
+
+        return label;
     }
 
     private void showSearchPage() {
@@ -123,6 +203,10 @@ public class PublicHomeFrame extends JFrame {
                         b.getPublishYear(),
                         b.getStatus()
                 });
+            }
+
+            if (books.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "查無資料");
             }
         });
 
@@ -211,10 +295,17 @@ public class PublicHomeFrame extends JFrame {
         panel.getBtnLogin().addActionListener(e -> {
 
             String username = panel.getTxtUsername().getText().trim();
-            String password = new String(panel.getTxtPassword().getPassword()).trim();
 
-            service.AuthService authService = new service.AuthService();
-            model.User user = authService.loginUser(username, password);
+            String password =
+                    new String(
+                            panel.getTxtPassword().getPassword()
+                    ).trim();
+
+            service.AuthService authService =
+                    new service.AuthService();
+
+            model.User user =
+                    authService.loginUser(username, password);
 
             if (user != null) {
 
@@ -223,7 +314,10 @@ public class PublicHomeFrame extends JFrame {
                 UserMainFrame userMainFrame =
                         new UserMainFrame(user.getName());
 
-                new controller.UserController(userMainFrame, user);
+                new controller.UserController(
+                        userMainFrame,
+                        user
+                );
 
             } else {
                 JOptionPane.showMessageDialog(
@@ -232,7 +326,7 @@ public class PublicHomeFrame extends JFrame {
                         登入失敗。
 
                         請確認：
-                        • 學號是否正確
+                        • 學號或姓名是否正確
                         • 密碼是否正確
                         """
                 );
@@ -246,6 +340,7 @@ public class PublicHomeFrame extends JFrame {
 
         setContent(panel);
     }
+
     private static class BackgroundPanel extends JPanel {
 
         private Image image;
@@ -256,6 +351,7 @@ public class PublicHomeFrame extends JFrame {
 
         @Override
         protected void paintComponent(Graphics g) {
+
             super.paintComponent(g);
 
             g.drawImage(

@@ -35,7 +35,7 @@ public class AdminBooksPanel extends JPanel {
         tableCard.setLayout(new BorderLayout());
         tableCard.add(new JScrollPane(table), BorderLayout.CENTER);
 
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
+        JPanel bottom = new JPanel(new GridLayout(2, 1, 0, 10));
         bottom.setBackground(AdminStyle.BG);
 
         JTextField txtTitle = UIStyle.textField();
@@ -44,11 +44,11 @@ public class AdminBooksPanel extends JPanel {
         JTextField txtYear = UIStyle.textField();
         JTextField txtRemoveId = UIStyle.textField();
 
-        txtTitle.setPreferredSize(new Dimension(140, 38));
-        txtAuthor.setPreferredSize(new Dimension(120, 38));
-        txtPublisher.setPreferredSize(new Dimension(120, 38));
-        txtYear.setPreferredSize(new Dimension(80, 38));
-        txtRemoveId.setPreferredSize(new Dimension(90, 38));
+        txtTitle.setPreferredSize(new Dimension(150, 38));
+        txtAuthor.setPreferredSize(new Dimension(130, 38));
+        txtPublisher.setPreferredSize(new Dimension(130, 38));
+        txtYear.setPreferredSize(new Dimension(90, 38));
+        txtRemoveId.setPreferredSize(new Dimension(120, 38));
 
         JButton btnAdd = new AdminButton("新增");
         JButton btnRemove = new AdminButton("下架");
@@ -58,20 +58,29 @@ public class AdminBooksPanel extends JPanel {
         btnRemove.setPreferredSize(new Dimension(90, 38));
         btnRefresh.setPreferredSize(new Dimension(110, 38));
 
-        bottom.add(AdminStyle.label("書名"));
-        bottom.add(txtTitle);
-        bottom.add(AdminStyle.label("作者"));
-        bottom.add(txtAuthor);
-        bottom.add(AdminStyle.label("出版社"));
-        bottom.add(txtPublisher);
-        bottom.add(AdminStyle.label("年份"));
-        bottom.add(txtYear);
-        bottom.add(btnAdd);
+        JPanel addPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 5));
+        addPanel.setBackground(AdminStyle.BG);
 
-        bottom.add(AdminStyle.label("Book ID"));
-        bottom.add(txtRemoveId);
-        bottom.add(btnRemove);
-        bottom.add(btnRefresh);
+        addPanel.add(AdminStyle.label("書名"));
+        addPanel.add(txtTitle);
+        addPanel.add(AdminStyle.label("作者"));
+        addPanel.add(txtAuthor);
+        addPanel.add(AdminStyle.label("出版社"));
+        addPanel.add(txtPublisher);
+        addPanel.add(AdminStyle.label("年份"));
+        addPanel.add(txtYear);
+        addPanel.add(btnAdd);
+
+        JPanel removePanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 5));
+        removePanel.setBackground(AdminStyle.BG);
+
+        removePanel.add(AdminStyle.label("Book ID"));
+        removePanel.add(txtRemoveId);
+        removePanel.add(btnRemove);
+        removePanel.add(btnRefresh);
+
+        bottom.add(addPanel);
+        bottom.add(removePanel);
 
         add(tableCard, BorderLayout.CENTER);
         add(bottom, BorderLayout.SOUTH);
@@ -87,16 +96,30 @@ public class AdminBooksPanel extends JPanel {
                     txtPublisher.getText().trim(),
                     txtYear.getText().trim()
             );
+
+            txtTitle.setText("");
+            txtAuthor.setText("");
+            txtPublisher.setText("");
+            txtYear.setText("");
+
             loadBooks();
         });
 
         btnRemove.addActionListener(e -> {
             try {
-                int bookId = Integer.parseInt(txtRemoveId.getText().trim());
+                int bookId = Integer.parseInt(
+                        txtRemoveId.getText().trim()
+                );
+
                 removeBook(bookId);
+                txtRemoveId.setText("");
                 loadBooks();
+
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "請輸入正確 Book ID");
+                JOptionPane.showMessageDialog(
+                        this,
+                        "請輸入正確 Book ID"
+                );
             }
         });
     }
@@ -112,9 +135,9 @@ public class AdminBooksPanel extends JPanel {
         """;
 
         try (
-            Connection conn = DBConnection.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            ResultSet rs = stmt.executeQuery()
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()
         ) {
             while (rs.next()) {
                 model.addRow(new Object[]{
@@ -132,8 +155,12 @@ public class AdminBooksPanel extends JPanel {
         }
     }
 
-    private void addBook(String title, String authors, String publisher, String year) {
-
+    private void addBook(
+            String title,
+            String authors,
+            String publisher,
+            String year
+    ) {
         if (title.isEmpty()) {
             JOptionPane.showMessageDialog(this, "書名不可空白");
             return;
@@ -146,8 +173,8 @@ public class AdminBooksPanel extends JPanel {
         """;
 
         try (
-            Connection conn = DBConnection.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)
         ) {
             stmt.setString(1, title);
             stmt.setString(2, authors);
@@ -160,6 +187,7 @@ public class AdminBooksPanel extends JPanel {
 
         } catch (Exception e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "新增失敗！");
         }
     }
 
@@ -172,8 +200,8 @@ public class AdminBooksPanel extends JPanel {
         """;
 
         try (
-            Connection conn = DBConnection.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)
         ) {
             stmt.setInt(1, bookId);
 
@@ -186,6 +214,7 @@ public class AdminBooksPanel extends JPanel {
 
         } catch (Exception e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "下架失敗！");
         }
     }
 }
