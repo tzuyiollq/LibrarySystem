@@ -1,6 +1,7 @@
-package view;
+package view.panel;
 
 import controller.AdminLoginController;
+import view.AdminLoginFrame;
 import view.components.ModernButton;
 import view.components.UIStyle;
 
@@ -10,14 +11,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
-public class LoginFrame extends JFrame {
+public class LoginPanel extends JPanel {
 
     private JTextField txtUsername;
     private JPasswordField txtPassword;
 
     private JButton btnLogin;
     private JButton btnRegister;
-    private JButton btnAdminLogin;
     private JButton btnHome;
 
     private JLabel lblKey;
@@ -28,19 +28,14 @@ public class LoginFrame extends JFrame {
     private int mouseY;
     private boolean adminOpening = false;
 
-    public LoginFrame() {
+    public LoginPanel() {
 
-        setTitle("使用者登入");
-        setSize(1100, 700);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        JPanel main = new JPanel(null);
-        main.setBackground(UIStyle.BG);
+        setLayout(null);
+        setBackground(UIStyle.BG);
 
         btnHome = new ModernButton("← 回首頁");
         btnHome.setBounds(30, 30, 130, 42);
-        main.add(btnHome);
+        add(btnHome);
 
         JPanel card = UIStyle.card();
         card.setLayout(new GridBagLayout());
@@ -66,11 +61,9 @@ public class LoginFrame extends JFrame {
 
         btnLogin = new ModernButton("登入");
         btnRegister = new ModernButton("註冊");
-        btnAdminLogin = new ModernButton("管理者登入");
 
         btnLogin.setPreferredSize(new Dimension(160, 46));
         btnRegister.setPreferredSize(new Dimension(110, 40));
-        btnAdminLogin.setPreferredSize(new Dimension(140, 40));
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -102,42 +95,32 @@ public class LoginFrame extends JFrame {
         bottom.setBackground(Color.WHITE);
         bottom.add(UIStyle.label("還沒有帳號？"));
         bottom.add(btnRegister);
-        bottom.add(btnAdminLogin);
 
         gbc.gridx = 0;
         gbc.gridy = 4;
         gbc.gridwidth = 2;
         card.add(bottom, gbc);
 
-        main.add(card);
+        add(card);
 
         lblKey = new JLabel("🔑");
         lblKey.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 45));
         lblKey.setBounds(830, 520, 70, 70);
         lblKey.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        main.add(lblKey);
+        add(lblKey);
 
         lblBook = new JLabel("📕");
         lblBook.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 60));
         lblBook.setBounds(910, 510, 90, 90);
-        main.add(lblBook);
+        add(lblBook);
 
         lblEffect = new JLabel("✨");
         lblEffect.setFont(new Font("Segoe UI Emoji", Font.PLAIN, 70));
         lblEffect.setBounds(885, 475, 140, 120);
         lblEffect.setVisible(false);
-        main.add(lblEffect);
-
-        add(main);
+        add(lblEffect);
 
         initSecretAdminDrag();
-
-        btnHome.addActionListener(e -> {
-            dispose();
-            new PublicHomeFrame();
-        });
-
-        setVisible(true);
     }
 
     private void initSecretAdminDrag() {
@@ -206,7 +189,12 @@ public class LoginFrame extends JFrame {
 
                 new AdminLoginController(adminLoginFrame);
 
-                dispose();
+                Window window =
+                        SwingUtilities.getWindowAncestor(this);
+
+                if (window != null) {
+                    window.dispose();
+                }
             });
 
             openTimer.setRepeats(false);
@@ -228,10 +216,6 @@ public class LoginFrame extends JFrame {
 
     public JButton getBtnRegister() {
         return btnRegister;
-    }
-
-    public JButton getBtnAdminLogin() {
-        return btnAdminLogin;
     }
 
     public JButton getBtnHome() {

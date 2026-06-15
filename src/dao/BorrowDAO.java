@@ -135,6 +135,38 @@ public class BorrowDAO {
 
         return false;
     }
+    public boolean returnBook(int userId, int bookId) {
+
+        String getSql = """
+            SELECT record_id
+            FROM borrow_records
+            WHERE user_id = ?
+              AND book_id = ?
+              AND return_date IS NULL
+            ORDER BY borrow_date DESC
+            LIMIT 1
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(getSql)
+        ) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, bookId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                int recordId = rs.getInt("record_id");
+                return returnBook(recordId);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 
     public int countCurrentBorrowedBooks(int userId) {
 
@@ -335,12 +367,13 @@ public class BorrowDAO {
             WHERE user_id = ?
               AND book_id = ?
               AND return_date IS NULL
+            ORDER BY borrow_date DESC
             LIMIT 1
         """;
 
         try (
-            Connection conn = DBConnection.getConnection();
-            PreparedStatement stmt = conn.prepareStatement(sql)
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)
         ) {
             stmt.setInt(1, userId);
             stmt.setInt(2, bookId);
@@ -349,7 +382,12 @@ public class BorrowDAO {
 
             if (rs.next()) {
                 int recordId = rs.getInt("record_id");
-                return returnBook(recordId);
+
+                return returnBookWithCredit(
+                        recordId,
+                        userId,
+                        bookId
+                );
             }
 
         } catch (Exception e) {
@@ -357,5 +395,219 @@ public class BorrowDAO {
         }
 
         return false;
+    }
+    public boolean bookExists(int bookId) {
+
+        String sql = """
+            SELECT COUNT(*)
+            FROM books
+            WHERE book_id = ?
+        """;
+
+        try (
+                java.sql.Connection conn = DBConnection.getConnection();
+                java.sql.PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+            stmt.setInt(1, bookId);
+
+            java.sql.ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1) > 0;
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
+    public boolean isBookAvailable(int bookId) {
+
+        String sql = """
+            SELECT status
+            FROM books
+            WHERE book_id = ?
+        """;
+
+        try (
+                java.sql.Connection conn = DBConnection.getConnection();
+                java.sql.PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+            stmt.setInt(1, bookId);
+
+            java.sql.ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return "AVAILABLE".equals(rs.getString("status"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+    private int getMaxCredit(Connection conn, int userId) throws Exception {
+
+        String sql = """
+            SELECT role_level
+            FROM users
+            WHERE user_id = ?
+        """;
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, userId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return "VIP".equals(rs.getString("role_level")) ? 150 : 100;
+            }
+        }
+
+        return 100;
+    }
+    private boolean returnBookWithCredit(
+            int recordId,
+            int userId,
+            int bookId
+    ) {
+
+        String getRecordSql = """
+            SELECT DATEDIFF(NOW(), due_date) AS overdue_days
+            FROM borrow_records
+            WHERE record_id = ?
+        """;
+
+        String getUserSql = """
+            SELECT credit_score, role_level
+            FROM users
+            WHERE user_id = ?
+        """;
+
+        String returnSql = """
+            UPDATE borrow_records
+            SET return_date = NOW()
+            WHERE record_id = ?
+        """;
+
+        String bookSql = """
+            UPDATE books
+            SET status = 'AVAILABLE'
+            WHERE book_id = ?
+        """;
+
+        String updateUserSql = """
+            UPDATE users
+            SET credit_score = ?,
+                status = ?
+            WHERE user_id = ?
+        """;
+
+        try (Connection conn = DBConnection.getConnection()) {
+
+            conn.setAutoCommit(false);
+
+            int overdueDays = 0;
+
+            try (PreparedStatement stmt = conn.prepareStatement(getRecordSql)) {
+                stmt.setInt(1, recordId);
+
+                ResultSet rs = stmt.executeQuery();
+
+                if (rs.next()) {
+                    overdueDays = rs.getInt("overdue_days");
+                }
+            }
+
+            int creditScore = 100;
+            String roleLevel = "NORMAL";
+
+            try (PreparedStatement stmt = conn.prepareStatement(getUserSql)) {
+                stmt.setInt(1, userId);
+
+                ResultSet rs = stmt.executeQuery();
+
+                if (rs.next()) {
+                    creditScore = rs.getInt("credit_score");
+                    roleLevel = rs.getString("role_level");
+                }
+            }
+
+            int maxCredit =
+                    "VIP".equals(roleLevel) ? 150 : 100;
+
+            int newCredit;
+
+            if (overdueDays > 0) {
+                newCredit = creditScore - overdueDays * 10;
+            } else {
+                newCredit = creditScore + 5;
+            }
+
+            if (newCredit > maxCredit) {
+                newCredit = maxCredit;
+            }
+
+            if (newCredit < 0) {
+                newCredit = 0;
+            }
+
+            String newStatus =
+                    newCredit <= 0 ? "SUSPENDED" : "ACTIVE";
+
+            try (PreparedStatement stmt = conn.prepareStatement(returnSql)) {
+                stmt.setInt(1, recordId);
+                stmt.executeUpdate();
+            }
+
+            try (PreparedStatement stmt = conn.prepareStatement(bookSql)) {
+                stmt.setInt(1, bookId);
+                stmt.executeUpdate();
+            }
+
+            try (PreparedStatement stmt = conn.prepareStatement(updateUserSql)) {
+                stmt.setInt(1, newCredit);
+                stmt.setString(2, newStatus);
+                stmt.setInt(3, userId);
+                stmt.executeUpdate();
+            }
+
+            conn.commit();
+            return true;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+    public int countUserTotalBorrowRecords(int userId) {
+
+        String sql = """
+            SELECT COUNT(*)
+            FROM borrow_records
+            WHERE user_id = ?
+        """;
+
+        try (
+                Connection conn = DBConnection.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)
+        ) {
+            stmt.setInt(1, userId);
+
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0;
     }
 }

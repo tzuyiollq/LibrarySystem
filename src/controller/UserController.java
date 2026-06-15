@@ -1,7 +1,9 @@
 package controller;
 
 import model.User;
+import view.LoginFrame;
 import view.UserMainFrame;
+
 import view.panel.BorrowBookPanel;
 import view.panel.ReturnBookPanel;
 import view.panel.BookSearchPanel;
@@ -10,10 +12,13 @@ import view.panel.ReserveBookPanel;
 import view.panel.FavoritePanel;
 import view.panel.BookReviewPanel;
 import view.panel.ProfilePanel;
-
+import view.panel.WelcomePanel;
+import view.panel.MyReservationPanel;
+import view.panel.OverduePanel;
+import view.panel.ReminderPanel;
+import view.panel.BorrowRecordPanel;
 
 import javax.swing.*;
-import java.awt.*;
 
 public class UserController {
 
@@ -24,96 +29,117 @@ public class UserController {
         this.frame = frame;
         this.user = user;
 
+        frame.setContent(createHomePanel());
         initEvents();
     }
 
     private void initEvents() {
 
-    	frame.getBtnBorrowBook().addActionListener(e -> {
+        frame.getBtnBorrowBook().addActionListener(e -> showBorrowBookPanel());
+        frame.getBtnReturnBook().addActionListener(e -> showReturnBookPanel());
 
-    	    BorrowBookPanel panel =
-    	            new BorrowBookPanel(user);
-
-    	    panel.getBtnHome().addActionListener(x -> {
-
-    	        JPanel home = new JPanel(
-    	                new BorderLayout()
-    	        );
-
-    	        home.add(
-    	                new JLabel(
-    	                        "歡迎使用，" +
-    	                        user.getName(),
-    	                        SwingConstants.CENTER
-    	                ),
-    	                BorderLayout.CENTER
-    	        );
-
-    	        frame.setContent(home);
-
-    	    });
-
-    	    frame.setContent(panel);
-    	});
-
-    	frame.getBtnReturnBook().addActionListener(e -> {
-
-    	    ReturnBookPanel panel = new ReturnBookPanel(user);
-
-    	    panel.getBtnHome().addActionListener(x -> {
-    	        frame.setContent(createHomePanel());
-    	    });
-
-    	    frame.setContent(panel);
-    	});
-
-    	frame.getBtnSearchBook().addActionListener(e -> {
-    	    frame.setContent(new BookSearchPanel(user));
-    	});
-
-        frame.getBtnHotBooks().addActionListener(e ->
-                frame.setContent(
-                        new HotBookPanel()
-                )
+        frame.getBtnSearchBook().addActionListener(e ->
+                frame.setContent(new BookSearchPanel(user))
         );
 
-        frame.getBtnReserveBook().addActionListener(e ->
-                frame.setContent(
-                        new ReserveBookPanel(user)
-                )
-        );
-
-        frame.getBtnFavoriteBook().addActionListener(e ->
-                frame.setContent(
-                        new FavoritePanel(user)
-                )
-        );
-
-        frame.getBtnBookReview().addActionListener(e ->
-                frame.setContent(
-                        new BookReviewPanel(user)
-                )
-        );
-
-        frame.getBtnProfile().addActionListener(e ->
-                frame.setContent(
-                        new ProfilePanel(user)
-                )
-        );
-        
+        frame.getBtnHotBooks().addActionListener(e -> showHotBookPanel());
+        frame.getBtnReserveBook().addActionListener(e -> showReserveBookPanel());
+        frame.getBtnFavoriteBook().addActionListener(e -> showFavoritePanel());
+        frame.getBtnBookReview().addActionListener(e -> showBookReviewPanel());
+        frame.getBtnProfile().addActionListener(e -> showProfilePanel());
     }
-    private JPanel createHomePanel() {
 
-        JPanel home = new JPanel(new BorderLayout());
+    private void showBorrowBookPanel() {
+        BorrowBookPanel panel = new BorrowBookPanel(user);
+        panel.getBtnHome().addActionListener(e ->
+                frame.setContent(createHomePanel())
+        );
+        frame.setContent(panel);
+    }
 
-        home.add(
-                new JLabel(
-                        "歡迎使用，" + user.getName(),
-                        SwingConstants.CENTER
-                ),
-                BorderLayout.CENTER
+    private void showReturnBookPanel() {
+        ReturnBookPanel panel = new ReturnBookPanel(user);
+        panel.getBtnHome().addActionListener(e ->
+                frame.setContent(createHomePanel())
+        );
+        frame.setContent(panel);
+    }
+
+    private void showHotBookPanel() {
+        HotBookPanel panel = new HotBookPanel();
+        panel.getBtnHome().addActionListener(e ->
+                frame.setContent(createHomePanel())
+        );
+        frame.setContent(panel);
+    }
+
+    private void showReserveBookPanel() {
+        ReserveBookPanel panel = new ReserveBookPanel(user);
+        panel.getBtnHome().addActionListener(e ->
+                frame.setContent(createHomePanel())
+        );
+        frame.setContent(panel);
+    }
+
+    private void showFavoritePanel() {
+        FavoritePanel panel = new FavoritePanel(user);
+        panel.getBtnHome().addActionListener(e ->
+                frame.setContent(createHomePanel())
+        );
+        frame.setContent(panel);
+    }
+
+    private void showBookReviewPanel() {
+        BookReviewPanel panel = new BookReviewPanel(user);
+        panel.getBtnHome().addActionListener(e ->
+                frame.setContent(createHomePanel())
+        );
+        frame.setContent(panel);
+    }
+
+    private void showProfilePanel() {
+
+        ProfilePanel panel = new ProfilePanel(user);
+
+        panel.getBtnProfileInfo().addActionListener(e ->
+                showProfilePanel()
         );
 
-        return home;
+        panel.getBtnBorrowRecords().addActionListener(e -> {
+            BorrowRecordPanel p = new BorrowRecordPanel(user);
+            p.getBtnHome().addActionListener(x -> showProfilePanel());
+            frame.setContent(p);
+        });
+
+        panel.getBtnReminder().addActionListener(e -> {
+            ReminderPanel p = new ReminderPanel(user);
+            p.getBtnHome().addActionListener(x -> showProfilePanel());
+            frame.setContent(p);
+        });
+
+        panel.getBtnOverdue().addActionListener(e -> {
+            OverduePanel p = new OverduePanel(user);
+            p.getBtnHome().addActionListener(x -> showProfilePanel());
+            frame.setContent(p);
+        });
+
+        panel.getBtnMyReservations().addActionListener(e -> {
+            MyReservationPanel p = new MyReservationPanel(user);
+            p.getBtnHome().addActionListener(x -> showProfilePanel());
+            frame.setContent(p);
+        });
+
+        panel.getBtnLogout().addActionListener(e -> {
+            frame.dispose();
+
+            LoginFrame loginFrame = new LoginFrame();
+            new LoginController(loginFrame);
+        });
+
+        frame.setContent(panel);
+    }
+
+    private JPanel createHomePanel() {
+        return new WelcomePanel(user);
     }
 }

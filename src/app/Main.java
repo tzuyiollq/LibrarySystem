@@ -1,10 +1,9 @@
 package app;
-import controller.LoginController;
-import view.LoginFrame;
+
+import view.PublicHomeFrame;
 
 public class Main {
     public static void main(String[] args) {
-        LoginFrame frame = new LoginFrame();
-        new LoginController(frame);
+        new PublicHomeFrame();
     }
 }

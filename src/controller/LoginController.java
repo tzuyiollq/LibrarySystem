@@ -4,11 +4,10 @@ import javax.swing.JOptionPane;
 
 import model.User;
 import service.AuthService;
-import view.AdminLoginFrame;
+import service.ReminderService;
 import view.LoginFrame;
 import view.RegisterFrame;
 import view.UserMainFrame;
-import service.ReminderService;
 
 public class LoginController {
 
@@ -26,27 +25,45 @@ public class LoginController {
 
         loginFrame.getBtnLogin().addActionListener(e -> {
 
-            String username = loginFrame.getTxtUsername().getText().trim();
-            String password = new String(loginFrame.getTxtPassword().getPassword()).trim();
+            String username =
+                    loginFrame.getTxtUsername().getText().trim();
 
-            User user = authService.loginUser(username, password);
+            String password =
+                    new String(
+                            loginFrame.getTxtPassword().getPassword()
+                    ).trim();
+
+            User user =
+                    authService.loginUser(username, password);
 
             if (user != null) {
-            	ReminderService reminderService = new ReminderService();
+
+                ReminderService reminderService =
+                        new ReminderService();
+
                 reminderService.suspendLongOverdueUsers();
 
-                if (user.getStatus().equals("SUSPENDED")) {
+                if ("SUSPENDED".equals(user.getStatus())) {
 
                     JOptionPane.showMessageDialog(
                             loginFrame,
-                            "此帳號已停權，請洽管理員！"
+                            """
+                            您的帳號目前無法使用借閱功能。
+
+                            可能原因：
+                            • 逾期未歸還超過限制天數
+
+                            如需恢復權限，請聯繫圖書館管理員。
+                            """
                     );
 
                     return;
                 }
 
                 int overdueCount =
-                        reminderService.countOverdueBooks(user.getUserId());
+                        reminderService.countOverdueBooks(
+                                user.getUserId()
+                        );
 
                 if (overdueCount > 0) {
                     JOptionPane.showMessageDialog(
@@ -55,41 +72,43 @@ public class LoginController {
                     );
                 }
 
-                JOptionPane.showMessageDialog(loginFrame, "使用者登入成功！");
+                JOptionPane.showMessageDialog(
+                        loginFrame,
+                        "歡迎回來，" + user.getName() + "！"
+                );
+
                 loginFrame.dispose();
 
                 UserMainFrame userMainFrame =
-                        new UserMainFrame(user.getName());
+                        new UserMainFrame(
+                                user.getName()
+                        );
 
-                new UserController(userMainFrame, user);
+                new UserController(
+                        userMainFrame,
+                        user
+                );
 
             } else {
-                JOptionPane.showMessageDialog(loginFrame, "登入失敗！");
+
+                JOptionPane.showMessageDialog(
+                        loginFrame,
+                        """
+                        登入失敗。
+
+                        請確認：
+                        • 學號是否正確
+                        • 密碼是否正確
+                        """
+                );
             }
-        });
-
-        loginFrame.addPropertyChangeListener("OPEN_ADMIN_LOGIN", e -> {
-
-            AdminLoginFrame adminLoginFrame = new AdminLoginFrame();
-            new AdminLoginController(adminLoginFrame);
-
-            adminLoginFrame.addWindowListener(new java.awt.event.WindowAdapter() {
-
-                @Override
-                public void windowClosed(java.awt.event.WindowEvent e) {
-                    loginFrame.resetAdminLoginOpened();
-                }
-
-                @Override
-                public void windowClosing(java.awt.event.WindowEvent e) {
-                    loginFrame.resetAdminLoginOpened();
-                }
-            });
         });
 
         loginFrame.getBtnRegister().addActionListener(e -> {
 
-            RegisterFrame frame = new RegisterFrame();
+            RegisterFrame frame =
+                    new RegisterFrame();
+
             new RegisterController(frame);
         });
     }

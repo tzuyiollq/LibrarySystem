@@ -1,6 +1,8 @@
 package controller;
 
-import view.*;
+import view.AdminMainFrame;
+import view.LoginFrame;
+import view.adminpanel.*;
 
 public class AdminController {
 
@@ -8,72 +10,42 @@ public class AdminController {
 
     public AdminController(AdminMainFrame frame) {
         this.frame = frame;
+
+        frame.setContent(new AdminDashboardPanel());
+
         initEvents();
     }
 
     private void initEvents() {
 
-        frame.getBtnAllRecords().addActionListener(e ->
-                new AdminBorrowRecordController(
-                        new AdminBorrowRecordFrame()
-                )
+        frame.getBtnDashboard().addActionListener(e ->
+                frame.setContent(new AdminDashboardPanel())
         );
 
-        frame.getBtnStudentRecords().addActionListener(e ->
-                new AdminStudentRecordController(
-                        new AdminStudentRecordFrame()
-                )
+        frame.getBtnBooks().addActionListener(e ->
+                frame.setContent(new AdminBooksPanel())
         );
 
-        frame.getBtnAllBooks().addActionListener(e ->
-                new AdminBookController(
-                        new AdminBookFrame()
-                )
+        frame.getBtnUsers().addActionListener(e ->
+                frame.setContent(new AdminUsersPanel())
         );
 
-        frame.getBtnAddBook().addActionListener(e ->
-                new AdminAddBookController(
-                        new AdminAddBookFrame()
-                )
-        );
-
-        frame.getBtnRemoveBook().addActionListener(e ->
-                new AdminRemoveBookController(
-                        new AdminRemoveBookFrame()
-                )
-        );
-
-        frame.getBtnAllUsers().addActionListener(e ->
-                new AdminUserController(
-                        new AdminUserFrame()
-                )
-        );
-
-        frame.getBtnSuspendUser().addActionListener(e ->
-                new AdminUserManageController(
-                        new AdminUserManageFrame()
-                )
-        );
-
-        frame.getBtnActivateUser().addActionListener(e ->
-                new AdminUserManageController(
-                        new AdminUserManageFrame()
-                )
+        frame.getBtnRecords().addActionListener(e ->
+                frame.setContent(new AdminRecordsPanel())
         );
 
         frame.getBtnUpdateRole().addActionListener(e ->
-                new AdminUpdateRoleController(
-                        new AdminUpdateRoleFrame()
-                )
+                frame.setContent(new AdminUpdateRolePanel())
         );
 
         frame.getBtnLogout().addActionListener(e -> {
             frame.dispose();
 
-            LoginFrame login =
-                    new LoginFrame();
-
-            new LoginController(login);
+            LoginFrame loginFrame = new LoginFrame();
+            new LoginController(loginFrame);
         });
+        frame.getBtnReviews().addActionListener(e ->
+        	frame.setContent(new AdminReviewPanel())
+        );
     }
 }

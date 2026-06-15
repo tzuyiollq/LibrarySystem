@@ -2,6 +2,9 @@ package view.panel;
 
 import model.User;
 import service.BorrowService;
+import view.components.ModernButton;
+import view.components.UIStyle;
+import model.BorrowResult;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,198 +15,208 @@ public class BorrowBookPanel extends JPanel {
 
     private JTextField txtBookId;
     private JComboBox<Integer> cmbDays;
-
     private JLabel lblRemain;
 
     private JButton btnBorrow;
     private JButton btnHome;
 
     public BorrowBookPanel(User user) {
-
         this.user = user;
 
-        setLayout(null);
+        setLayout(new BorderLayout());
+        setBackground(UIStyle.BG);
 
-        //--------------------------------
-        // 回首頁
-        //--------------------------------
+        JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        topPanel.setBackground(UIStyle.BG);
 
-        btnHome = new JButton("← 回首頁");
-        btnHome.setBounds(20,20,120,35);
-        add(btnHome);
+        btnHome = new ModernButton("← 回首頁");
+        btnHome.setPreferredSize(new Dimension(130, 42));
+        topPanel.add(btnHome);
 
-        //--------------------------------
-        // Book ID
-        //--------------------------------
+        JPanel centerWrapper = new JPanel(new GridBagLayout());
+        centerWrapper.setBackground(UIStyle.BG);
 
-        JLabel lblBookId = new JLabel("Book ID :");
-        lblBookId.setBounds(300,180,120,40);
-        lblBookId.setFont(new Font("微軟正黑體",Font.BOLD,24));
+        JPanel card = UIStyle.card();
+        card.setLayout(new GridBagLayout());
+        card.setPreferredSize(new Dimension(520, 420));
 
-        add(lblBookId);
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(14, 14, 14, 14);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        txtBookId = new JTextField();
+        JLabel title = UIStyle.title("借書");
+        title.setHorizontalAlignment(SwingConstants.CENTER);
 
-        txtBookId.setBounds(
-                430,
-                180,
-                250,
-                40
-        );
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        card.add(title, gbc);
 
-        add(txtBookId);
+        gbc.gridwidth = 1;
 
-        //--------------------------------
-        // 天數
-        //--------------------------------
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        card.add(UIStyle.label("Book ID："), gbc);
 
-        JLabel lblDays = new JLabel("天數 :");
+        txtBookId = UIStyle.textField();
+        gbc.gridx = 1;
+        gbc.gridy = 1;
+        card.add(txtBookId, gbc);
 
-        lblDays.setBounds(
-                300,
-                260,
-                120,
-                40
-        );
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        card.add(UIStyle.label("借閱天數："), gbc);
 
-        lblDays.setFont(
-                new Font("微軟正黑體",
-                        Font.BOLD,
-                        24)
-        );
+        cmbDays = new JComboBox<>(new Integer[]{1, 3, 7, 14});
+        cmbDays.setFont(UIStyle.NORMAL_FONT);
+        cmbDays.setBackground(Color.WHITE);
+        gbc.gridx = 1;
+        gbc.gridy = 2;
+        card.add(cmbDays, gbc);
 
-        add(lblDays);
+        lblRemain = UIStyle.label(getRemainText());
+        lblRemain.setHorizontalAlignment(SwingConstants.CENTER);
 
-        cmbDays =
-                new JComboBox<>(
-                        new Integer[]{
-                                7,
-                                14,
-                                21,
-                                30
-                        }
-                );
+        gbc.gridx = 0;
+        gbc.gridy = 3;
+        gbc.gridwidth = 2;
+        card.add(lblRemain, gbc);
 
-        cmbDays.setBounds(
-                430,
-                260,
-                250,
-                40
-        );
+        btnBorrow = new ModernButton("借書");
+        btnBorrow.setPreferredSize(new Dimension(180, 48));
 
-        add(cmbDays);
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        card.add(btnBorrow, gbc);
 
-        //--------------------------------
-        // 可借數量
-        //--------------------------------
+        centerWrapper.add(card);
 
-        lblRemain =
-                new JLabel(
-                        getRemainText(),
-                        SwingConstants.CENTER
-                );
+        add(topPanel, BorderLayout.NORTH);
+        add(centerWrapper, BorderLayout.CENTER);
 
-        lblRemain.setBounds(
-                330,
-                340,
-                300,
-                40
-        );
-
-        lblRemain.setFont(
-                new Font(
-                        "微軟正黑體",
-                        Font.BOLD,
-                        20
-                )
-        );
-
-        add(lblRemain);
-
-        //--------------------------------
-        // 借書按鈕
-        //--------------------------------
-
-        btnBorrow =
-                new JButton("借書");
-
-        btnBorrow.setBounds(
-                420,
-                450,
-                120,
-                50
-        );
-
-        btnBorrow.setFont(
-                new Font(
-                        "微軟正黑體",
-                        Font.BOLD,
-                        20
-                )
-        );
-
-        add(btnBorrow);
-
-        //--------------------------------
-        // 事件
-        //--------------------------------
-
-        btnBorrow.addActionListener(e -> {
-
-            try {
-                int bookId =
-                        Integer.parseInt(
-                                txtBookId.getText().trim()
-                        );
-
-                int days =
-                        (Integer) cmbDays.getSelectedItem();
-
-                BorrowService service =
-                        new BorrowService();
-
-                boolean success =
-                        service.borrowBook(user, bookId, days);
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        success ? "借書成功！" : "借書失敗，請確認書籍狀態、天數或借閱上限"
-                );
-
-                lblRemain.setText(getRemainText());
-
-            } catch (Exception ex) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Book ID格式錯誤"
-                );
-            }
-        });
+        btnBorrow.addActionListener(e -> borrowBook());
     }
 
-    private String getRemainText(){
+    private void borrowBook() {
+        try {
+            int bookId = Integer.parseInt(txtBookId.getText().trim());
+            int days = (Integer) cmbDays.getSelectedItem();
 
-        BorrowService service =
-                new BorrowService();
+            BorrowService service = new BorrowService();
+
+            BorrowResult result =
+                    service.borrowBookWithResult(user, bookId, days);
+
+            if (result == BorrowResult.SUCCESS) {
+
+                int totalBorrow =
+                        service.countUserTotalBorrowRecords(
+                                user.getUserId()
+                        );
+
+                if (totalBorrow == 67) {
+                    show67Effect();
+                } else {
+                    JOptionPane.showMessageDialog(
+                            this,
+                            result.getMessage()
+                    );
+                }
+
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        result.getMessage()
+                );
+            }
+            lblRemain.setText(getRemainText());
+
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Book ID 格式錯誤");
+        }
+    }
+
+    private String getRemainText() {
+        BorrowService service = new BorrowService();
 
         int borrowed =
-        		service.countCurrentBorrowedBooks(
-        		        user.getUserId()
-        		);
+                service.countCurrentBorrowedBooks(user.getUserId());
 
         int limit =
-                user.getRoleLevel().equals("VIP")
-                        ? 10
-                        : 5;
+                user.getRoleLevel().equals("VIP") ? 10 : 5;
 
-        int remain =
-                limit - borrowed;
+        int remain = limit - borrowed;
 
-        return "尚可借 " + remain + " 本書";
+        return "目前已借 " + borrowed + " 本，尚可借 " + remain + " 本";
     }
 
     public JButton getBtnHome() {
         return btnHome;
+    }
+    private void show67Effect() {
+
+        JDialog dialog = new JDialog(
+                SwingUtilities.getWindowAncestor(this),
+                "67 彩蛋",
+                Dialog.ModalityType.APPLICATION_MODAL
+        );
+
+        dialog.setSize(520, 360);
+        dialog.setLocationRelativeTo(this);
+        dialog.setUndecorated(true);
+
+        JPanel panel = new JPanel(null);
+        panel.setBackground(new Color(255, 248, 220));
+
+        JLabel msg = new JLabel(
+                "恭喜！第 67 次借書達成！",
+                SwingConstants.CENTER
+        );
+        msg.setFont(new Font("微軟正黑體", Font.BOLD, 22));
+        msg.setBounds(40, 30, 440, 40);
+
+        JLabel lbl6 = new JLabel("6", SwingConstants.CENTER);
+        lbl6.setFont(new Font("Arial Black", Font.BOLD, 120));
+        lbl6.setForeground(new Color(255, 120, 0));
+        lbl6.setBounds(145, 110, 110, 130);
+
+        JLabel lbl7 = new JLabel("7", SwingConstants.CENTER);
+        lbl7.setFont(new Font("Arial Black", Font.BOLD, 120));
+        lbl7.setForeground(new Color(80, 140, 220));
+        lbl7.setBounds(255, 110, 110, 130);
+
+        panel.add(msg);
+        panel.add(lbl6);
+        panel.add(lbl7);
+
+        dialog.setContentPane(panel);
+
+        Timer timer = new Timer(45, null);
+
+        timer.addActionListener(new java.awt.event.ActionListener() {
+
+            int frame = 0;
+
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+
+                frame++;
+
+                int offset =
+                        frame % 2 == 0 ? 28 : -28;
+
+                lbl6.setLocation(145, 110 + offset);
+                lbl7.setLocation(255, 110 - offset);
+
+                if (frame >= 70) {
+                    timer.stop();
+                    dialog.dispose();
+                }
+            }
+        });
+
+        timer.start();
+        dialog.setVisible(true);
     }
 }

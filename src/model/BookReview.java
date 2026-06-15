@@ -11,9 +11,16 @@ public class BookReview {
     private String comment;
     private String createdAt;
 
-    public BookReview(int reviewId, int userId, int bookId,
-                      String userName, String bookTitle,
-                      int rating, String comment, String createdAt) {
+    public BookReview(
+            int reviewId,
+            int userId,
+            int bookId,
+            String userName,
+            String bookTitle,
+            int rating,
+            String comment,
+            String createdAt
+    ) {
         this.reviewId = reviewId;
         this.userId = userId;
         this.bookId = bookId;
@@ -24,12 +31,35 @@ public class BookReview {
         this.createdAt = createdAt;
     }
 
-    public int getReviewId() { return reviewId; }
-    public int getUserId() { return userId; }
-    public int getBookId() { return bookId; }
-    public String getUserName() { return userName; }
-    public String getBookTitle() { return bookTitle; }
-    public int getRating() { return rating; }
-    public String getComment() { return comment; }
-    public String getCreatedAt() { return createdAt; }
+    public int getReviewId() {
+        return reviewId;
+    }
+
+    public int getUserId() {
+        return userId;
+    }
+
+    public int getBookId() {
+        return bookId;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getBookTitle() {
+        return bookTitle;
+    }
+
+    public int getRating() {
+        return rating;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
 }

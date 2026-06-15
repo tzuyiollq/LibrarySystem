@@ -1,11 +1,18 @@
 CREATE DATABASE IF NOT EXISTS library_system;
 USE library_system;
 
+SET FOREIGN_KEY_CHECKS = 0;
+
+DROP TABLE IF EXISTS book_reviews;
+DROP TABLE IF EXISTS favorite_books;
+DROP TABLE IF EXISTS reservations;
 DROP TABLE IF EXISTS borrow_records;
 DROP TABLE IF EXISTS book_isbns;
 DROP TABLE IF EXISTS books;
 DROP TABLE IF EXISTS admins;
 DROP TABLE IF EXISTS users;
+
+SET FOREIGN_KEY_CHECKS = 1;
 
 CREATE TABLE users (
     user_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -14,6 +21,7 @@ CREATE TABLE users (
     password VARCHAR(100) NOT NULL,
     role_level ENUM('NORMAL','VIP') NOT NULL DEFAULT 'NORMAL',
     status ENUM('ACTIVE','SUSPENDED') NOT NULL DEFAULT 'ACTIVE',
+    credit_score INT NOT NULL DEFAULT 100,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -53,6 +61,7 @@ CREATE TABLE borrow_records (
     due_date DATETIME NOT NULL,
     return_date DATETIME NULL,
     borrow_days INT NOT NULL,
+    penalty_applied_days INT NOT NULL DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (book_id) REFERENCES books(book_id)
@@ -68,7 +77,7 @@ CREATE TABLE reservations (
     FOREIGN KEY (book_id) REFERENCES books(book_id)
 );
 
-CREATE TABLE IF NOT EXISTS favorite_books (
+CREATE TABLE favorite_books (
     favorite_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     book_id INT NOT NULL,
@@ -78,13 +87,13 @@ CREATE TABLE IF NOT EXISTS favorite_books (
     UNIQUE (user_id, book_id)
 );
 
-CREATE TABLE IF NOT EXISTS book_reviews (
+CREATE TABLE book_reviews (
     review_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     book_id INT NOT NULL,
-    rating INT NOT NULL,
-    comment TEXT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(user_id),
-    FOREIGN KEY (book_id) REFERENCES books(book_id)
+    rating INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+    comment TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (book_id) REFERENCES books(book_id) ON DELETE CASCADE
 );

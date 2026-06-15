@@ -45,7 +45,7 @@ public class UserMainFrame extends JFrame {
         btnReserveBook = new ModernButton("預約書籍");
         btnFavoriteBook = new ModernButton("收藏書籍");
         btnBookReview = new ModernButton("書評系統");
-        btnProfile = new JButton("個人資料");
+        btnProfile = new ModernButton("個人資料");
 
         menuPanel.add(btnBorrowBook);
         menuPanel.add(btnReturnBook);

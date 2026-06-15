@@ -1,235 +1,117 @@
 package view.panel;
 
-import controller.LoginController;
-import model.BorrowRecord;
-import model.Reservation;
 import model.User;
 import service.BorrowService;
-import service.ReminderService;
-import service.ReservationService;
-import view.LoginFrame;
+import view.components.ModernButton;
+import view.components.UIStyle;
 
 import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.List;
 
 public class ProfilePanel extends JPanel {
 
-    private User user;
-
-    private BorrowService borrowService = new BorrowService();
-    private ReminderService reminderService = new ReminderService();
-    private ReservationService reservationService = new ReservationService();
-
-    private JPanel contentPanel;
+    private JButton btnProfileInfo;
+    private JButton btnBorrowRecords;
+    private JButton btnReminder;
+    private JButton btnOverdue;
+    private JButton btnMyReservations;
+    private JButton btnLogout;
 
     public ProfilePanel(User user) {
-        this.user = user;
 
-        setLayout(null);
+        setLayout(new BorderLayout(24, 24));
+        setBackground(UIStyle.BG);
+        setBorder(BorderFactory.createEmptyBorder(40, 60, 40, 60));
 
-        JPanel menuPanel = new JPanel(new GridLayout(6, 1, 0, 10));
-        menuPanel.setBounds(20, 20, 180, 520);
+        JPanel card = UIStyle.card();
+        card.setLayout(new BorderLayout(35, 20));
 
-        JButton btnInfo = new JButton("個人資料");
-        JButton btnRecords = new JButton("借閱紀錄");
-        JButton btnReminder = new JButton("到期提醒");
-        JButton btnOverdue = new JButton("逾期處理");
-        JButton btnReservations = new JButton("我的預約");
-        JButton btnLogout = new JButton("登出");
+        JLabel title = UIStyle.title("個人資料");
+        card.add(title, BorderLayout.NORTH);
 
-        menuPanel.add(btnInfo);
-        menuPanel.add(btnRecords);
-        menuPanel.add(btnReminder);
-        menuPanel.add(btnOverdue);
-        menuPanel.add(btnReservations);
-        menuPanel.add(btnLogout);
+        JPanel leftPanel = new JPanel(new GridLayout(5, 1, 0, 18));
+        leftPanel.setBackground(Color.WHITE);
 
-        contentPanel = new JPanel(new BorderLayout());
-        contentPanel.setBounds(230, 20, 700, 520);
+        btnProfileInfo = smallMenuButton("個人資料");
+        btnBorrowRecords = smallMenuButton("借閱紀錄");
+        btnReminder = smallMenuButton("到期提醒");
+        btnOverdue = smallMenuButton("逾期處理");
+        btnMyReservations = smallMenuButton("我的預約");
 
-        add(menuPanel);
-        add(contentPanel);
+        leftPanel.add(btnProfileInfo);
+        leftPanel.add(btnBorrowRecords);
+        leftPanel.add(btnReminder);
+        leftPanel.add(btnOverdue);
+        leftPanel.add(btnMyReservations);
 
-        btnInfo.addActionListener(e -> showInfo());
-        btnRecords.addActionListener(e -> showBorrowRecords());
-        btnReminder.addActionListener(e -> showReminders());
-        btnOverdue.addActionListener(e -> showOverdue());
-        btnReservations.addActionListener(e -> showReservations());
+        BorrowService borrowService = new BorrowService();
 
-        btnLogout.addActionListener(e -> {
-            SwingUtilities.getWindowAncestor(this).dispose();
-            LoginFrame loginFrame = new LoginFrame();
-            new LoginController(loginFrame);
-        });
-
-        showInfo();
-    }
-
-    private void setContent(JPanel panel) {
-        contentPanel.removeAll();
-        contentPanel.add(panel, BorderLayout.CENTER);
-        contentPanel.revalidate();
-        contentPanel.repaint();
-    }
-
-    private void showInfo() {
-        JPanel panel = new JPanel(new GridLayout(7, 1, 10, 10));
-
-        int borrowCount = borrowService.countCurrentBorrowedBooks(user.getUserId());
-        int reservationCount = reservationService.countWaitingReservations(user.getUserId());
-        int overdueCount = reminderService.countOverdueBooks(user.getUserId());
-
-        panel.add(new JLabel("學號：" + user.getStudentNo()));
-        panel.add(new JLabel("姓名：" + user.getName()));
-        panel.add(new JLabel("會員等級：" + user.getRoleLevel()));
-        panel.add(new JLabel("帳號狀態：" + user.getStatus()));
-        panel.add(new JLabel("目前借閱中：" + borrowCount + " 本"));
-        panel.add(new JLabel("目前預約中：" + reservationCount + " 本"));
-        panel.add(new JLabel("逾期未還：" + overdueCount + " 本"));
-
-        setContent(panel);
-    }
-
-    private void showBorrowRecords() {
-        String[] columns = {
-                "紀錄ID", "書名", "借出時間", "到期時間", "歸還時間", "借閱天數"
-        };
-
-        DefaultTableModel model = new DefaultTableModel(columns, 0);
-        JTable table = new JTable(model);
-
-        List<BorrowRecord> records =
-                borrowService.getUserBorrowRecords(user.getUserId());
-
-        for (BorrowRecord r : records) {
-            model.addRow(new Object[]{
-                    r.getRecordId(),
-                    r.getBookTitle(),
-                    r.getBorrowDate(),
-                    r.getDueDate(),
-                    r.getReturnDate(),
-                    r.getBorrowDays()
-            });
-        }
-
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JScrollPane(table), BorderLayout.CENTER);
-
-        setContent(panel);
-    }
-
-    private void showReminders() {
-        String[] columns = {
-                "紀錄ID", "書名", "借出時間", "到期時間"
-        };
-
-        DefaultTableModel model = new DefaultTableModel(columns, 0);
-        JTable table = new JTable(model);
-
-        List<BorrowRecord> records =
-                reminderService.getDueSoonBooks(user.getUserId());
-
-        for (BorrowRecord r : records) {
-            model.addRow(new Object[]{
-                    r.getRecordId(),
-                    r.getBookTitle(),
-                    r.getBorrowDate(),
-                    r.getDueDate()
-            });
-        }
-
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JScrollPane(table), BorderLayout.CENTER);
-
-        setContent(panel);
-    }
-
-    private void showOverdue() {
-        String[] columns = {
-                "紀錄ID", "書名", "借出時間", "到期時間", "逾期天數"
-        };
-
-        DefaultTableModel model = new DefaultTableModel(columns, 0);
-        JTable table = new JTable(model);
-
-        List<BorrowRecord> records =
-                reminderService.getOverdueRecords(user.getUserId());
-
-        for (BorrowRecord r : records) {
-            model.addRow(new Object[]{
-                    r.getRecordId(),
-                    r.getBookTitle(),
-                    r.getBorrowDate(),
-                    r.getDueDate(),
-                    r.getBorrowDays()
-            });
-        }
-
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JScrollPane(table), BorderLayout.CENTER);
-
-        setContent(panel);
-    }
-
-    private void showReservations() {
-        String[] columns = {
-                "預約ID", "Book ID", "書名", "預約時間", "狀態"
-        };
-
-        DefaultTableModel model = new DefaultTableModel(columns, 0);
-        JTable table = new JTable(model);
-
-        List<Reservation> reservations =
-                reservationService.getUserReservations(user.getUserId());
-
-        for (Reservation r : reservations) {
-            model.addRow(new Object[]{
-                    r.getReservationId(),
-                    r.getBookId(),
-                    r.getBookTitle(),
-                    r.getReservedAt(),
-                    r.getStatus()
-            });
-        }
-
-        JPanel bottomPanel = new JPanel(new FlowLayout());
-
-        JTextField txtReservationId = new JTextField(10);
-        JButton btnCancel = new JButton("取消預約");
-
-        bottomPanel.add(new JLabel("預約ID："));
-        bottomPanel.add(txtReservationId);
-        bottomPanel.add(btnCancel);
-
-        btnCancel.addActionListener(e -> {
-            try {
-                int reservationId =
-                        Integer.parseInt(txtReservationId.getText().trim());
-
-                boolean result =
-                        reservationService.cancelReservation(
-                                reservationId,
-                                user.getUserId()
-                        );
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        result ? "取消成功！" : "取消失敗！"
+        int borrowed =
+                borrowService.countCurrentBorrowedBooks(
+                        user.getUserId()
                 );
 
-                showReservations();
+        int limit =
+                "VIP".equals(user.getRoleLevel()) ? 10 : 5;
 
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "請輸入正確預約ID");
-            }
-        });
+        int remain =
+                limit - borrowed;
 
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.add(new JScrollPane(table), BorderLayout.CENTER);
-        panel.add(bottomPanel, BorderLayout.SOUTH);
+        int maxCredit =
+                "VIP".equals(user.getRoleLevel()) ? 150 : 100;
 
-        setContent(panel);
+        JPanel infoPanel = new JPanel(new GridLayout(7, 1, 10, 18));
+        infoPanel.setBackground(Color.WHITE);
+
+        infoPanel.add(UIStyle.label("學號：" + user.getStudentNo()));
+        infoPanel.add(UIStyle.label("姓名：" + user.getName()));
+        infoPanel.add(UIStyle.label("會員等級：" + user.getRoleLevel()));
+        infoPanel.add(UIStyle.label("帳號狀態：" + user.getStatus()));
+        infoPanel.add(UIStyle.label("信用分數：" + user.getCreditScore() + " / " + maxCredit));
+        infoPanel.add(UIStyle.label("目前借閱中：" + borrowed + " 本"));
+        infoPanel.add(UIStyle.label("還可以借：" + remain + " 本"));
+
+        btnLogout = new ModernButton("登出");
+        btnLogout.setPreferredSize(new Dimension(90, 34));
+
+        JPanel bottomPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        bottomPanel.setBackground(Color.WHITE);
+        bottomPanel.add(btnLogout);
+
+        card.add(leftPanel, BorderLayout.WEST);
+        card.add(infoPanel, BorderLayout.CENTER);
+        card.add(bottomPanel, BorderLayout.SOUTH);
+
+        add(card, BorderLayout.CENTER);
+    }
+
+    private JButton smallMenuButton(String text) {
+        JButton button = new ModernButton(text);
+        button.setPreferredSize(new Dimension(105, 52));
+        return button;
+    }
+
+    public JButton getBtnProfileInfo() {
+        return btnProfileInfo;
+    }
+
+    public JButton getBtnBorrowRecords() {
+        return btnBorrowRecords;
+    }
+
+    public JButton getBtnReminder() {
+        return btnReminder;
+    }
+
+    public JButton getBtnOverdue() {
+        return btnOverdue;
+    }
+
+    public JButton getBtnMyReservations() {
+        return btnMyReservations;
+    }
+
+    public JButton getBtnLogout() {
+        return btnLogout;
     }
 }

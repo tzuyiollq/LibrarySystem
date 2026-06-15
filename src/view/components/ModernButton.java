@@ -5,110 +5,81 @@ import java.awt.*;
 
 public class ModernButton extends JButton {
 
-    private static final Color TEXT_COLOR =
-            new Color(52, 73, 94);
-
-    private static final Color BORDER_COLOR =
-            new Color(235, 238, 242);
-
-    private static final Color HOVER_COLOR =
-            new Color(240, 246, 251);
-
-    private static final Color NORMAL_COLOR =
-            Color.WHITE;
-
-    private static final Color SHADOW_COLOR =
-            new Color(0, 0, 0, 15);
-
-    private static final int ARC = 35;
+    private static final int ARC = 34;
 
     public ModernButton(String text) {
-
         super(text);
+
+        setFont(UIStyle.BUTTON_FONT);
+        setForeground(UIStyle.TEXT);
 
         setFocusPainted(false);
         setBorderPainted(false);
         setContentAreaFilled(false);
         setOpaque(false);
 
-        setForeground(TEXT_COLOR);
-
-        setFont(
-                new Font(
-                        "Microsoft JhengHei UI",
-                        Font.PLAIN,
-                        18
-                )
-        );
-
-        setCursor(
-                new Cursor(Cursor.HAND_CURSOR)
-        );
-
+        setCursor(new Cursor(Cursor.HAND_CURSOR));
         setHorizontalAlignment(SwingConstants.CENTER);
     }
 
     @Override
     protected void paintComponent(Graphics g) {
 
-        Graphics2D g2 =
-                (Graphics2D) g.create();
+        Graphics2D g2 = (Graphics2D) g.create();
 
         g2.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON
         );
 
-        // 陰影
-        g2.setColor(SHADOW_COLOR);
+        g2.setColor(new Color(0, 0, 0, 16));
         g2.fillRoundRect(
-                3,
                 4,
-                getWidth() - 6,
-                getHeight() - 6,
+                5,
+                getWidth() - 8,
+                getHeight() - 8,
                 ARC,
                 ARC
         );
 
-        // 按鈕底色
-        if (getModel().isRollover()) {
-            g2.setColor(HOVER_COLOR);
+        if (getModel().isPressed()) {
+            g2.setColor(new Color(216, 232, 248));
+        } else if (getModel().isRollover()) {
+            g2.setColor(UIStyle.PRIMARY_LIGHT);
         } else {
-            g2.setColor(NORMAL_COLOR);
+            g2.setColor(Color.WHITE);
         }
 
         g2.fillRoundRect(
                 0,
                 0,
-                getWidth() - 6,
-                getHeight() - 6,
+                getWidth() - 8,
+                getHeight() - 8,
                 ARC,
                 ARC
         );
 
         g2.dispose();
-
         super.paintComponent(g);
     }
 
     @Override
     protected void paintBorder(Graphics g) {
 
-        Graphics2D g2 =
-                (Graphics2D) g.create();
+        Graphics2D g2 = (Graphics2D) g.create();
 
         g2.setRenderingHint(
                 RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON
         );
 
-        g2.setColor(BORDER_COLOR);
+        g2.setColor(UIStyle.BORDER);
 
         g2.drawRoundRect(
                 0,
                 0,
-                getWidth() - 7,
-                getHeight() - 7,
+                getWidth() - 9,
+                getHeight() - 9,
                 ARC,
                 ARC
         );
