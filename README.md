@@ -13,7 +13,6 @@ GUI(View) → Controller → Service → DAO → MySQL
 5. 執行 `Main.java`。
 
 ## 預設帳號
-使用者：王小明 / 1234
 管理者：admin / 1234
 
 ## 管理者入口
